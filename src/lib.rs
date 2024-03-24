@@ -17,7 +17,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn password_length() {
+    fn valid_password() {
         let ascii_chars: Vec<char> = (33..=126).map(|c| c as u8 as char).collect();
         let length = 7;
         let password_vector: Vec<char> = generate_password(length).chars().collect();
