@@ -1,6 +1,7 @@
 use rand::thread_rng;
 use rand::Rng;
 
+//Admin Account Boilerplate
 #[warn(dead_code)]
 pub struct Admin {
     pub username: String,
@@ -8,7 +9,7 @@ pub struct Admin {
 }
 
 impl Admin {
-    pub fn _new(name: &str, pass: &str) -> Admin {
+    pub fn new(name: &str, pass: &str) -> Admin {
         let username = name.to_string();
         let password = pass.to_string();
 
@@ -23,6 +24,7 @@ impl Admin {
     }
 }
 
+//Generate Password
 pub fn generate_password(length: usize) -> String {
     let ascii_chars: Vec<char> = (33..=126).map(|c| c as u8 as char).collect();
     let mut rng = thread_rng();
@@ -45,6 +47,21 @@ pub fn generate_password(length: usize) -> String {
     password
 }
 
+//Add Password
+pub struct Deck {
+    pub domain: String,
+    pub plaintext: String,
+}
+
+impl Deck {
+    pub fn new(domain: &str, plaintext: &str) -> Deck {
+        let domain = domain.to_string();
+        let plaintext = plaintext.to_string();
+
+        Deck { domain, plaintext }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -62,7 +79,7 @@ mod test {
     fn constructor_valid() {
         let password_test = generate_password(12);
         let name_test = String::from("Michael");
-        let admin = Admin::_new(&name_test, &password_test);
+        let admin = Admin::new(&name_test, &password_test);
         assert_eq!(admin.password, password_test);
     }
 }

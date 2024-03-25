@@ -1,4 +1,4 @@
-use kelvin::{generate_password, Admin};
+use kelvin::{generate_password, Admin, Deck};
 
 fn main() {
     let length = 20;
@@ -7,8 +7,6 @@ fn main() {
 
     println!("The password is {}", pass);
 
-    let _admin = Admin {
-        username,
-        password: pass,
-    };
+    let admin1 = Admin::new(&username, &pass);
+    let deck1 = Deck::new(&admin1.username, &admin1.password);
 }
