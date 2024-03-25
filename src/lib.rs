@@ -2,22 +2,23 @@ use rand::thread_rng;
 use rand::Rng;
 
 #[warn(dead_code)]
-struct Admin {
+pub struct Admin {
     username: String,
     password: String,
 }
 
 impl Admin {
-    pub fn _new(name: String, pass: String) -> Admin {
-        let username = name.clone();
-        let password = pass.clone();
+    pub fn _new(name: &str, pass: &str) -> Admin {
+        let username = name.to_string();
+        let password = pass.to_string();
 
         Admin { username, password }
     }
 }
 
+#[warn(dead_code)]
 impl Admin {
-    pub fn _hash_password(&self, pass: String) -> String {
+    pub fn hash_password(&self, pass: String) -> String {
         pass
     }
 }
@@ -33,7 +34,7 @@ pub fn generate_password(length: usize) -> String {
         .collect();
 
     let mut password_vector: Vec<char> = password.chars().collect();
-    let mut k = length.clone();
+    let mut k = length;
     while k > 1 {
         let i = rng.gen_range(0..length);
         k -= 1;
@@ -55,5 +56,13 @@ mod test {
         let password_vector: Vec<char> = generate_password(length).chars().collect();
 
         assert!(password_vector.iter().all(|&x| ascii_chars.contains(&x)));
+    }
+
+    #[test]
+    fn constructor_valid() {
+        let password_test = generate_password(12);
+        let name_test = String::from("Michael");
+        let admin = Admin::_new(&name_test, &password_test);
+        assert_eq!(admin.password, password_test);
     }
 }
