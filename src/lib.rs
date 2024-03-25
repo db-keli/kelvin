@@ -3,8 +3,8 @@ use rand::Rng;
 
 #[warn(dead_code)]
 pub struct Admin {
-    username: String,
-    password: String,
+    pub username: String,
+    pub password: String,
 }
 
 impl Admin {
