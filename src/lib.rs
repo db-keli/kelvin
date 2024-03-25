@@ -1,6 +1,27 @@
 use rand::thread_rng;
 use rand::Rng;
 
+#[warn(dead_code)]
+struct Admin {
+    username: String,
+    password: String,
+}
+
+impl Admin {
+    pub fn _new(name: String, pass: String) -> Admin {
+        let username = name.clone();
+        let password = pass.clone();
+
+        Admin { username, password }
+    }
+}
+
+impl Admin {
+    pub fn _hash_password(&self, pass: String) -> String {
+        pass
+    }
+}
+
 pub fn generate_password(length: usize) -> String {
     let ascii_chars: Vec<char> = (33..=126).map(|c| c as u8 as char).collect();
     let mut rng = thread_rng();
@@ -10,8 +31,6 @@ pub fn generate_password(length: usize) -> String {
             ascii_chars[idx]
         })
         .collect();
-
-    //Scramble password
 
     let mut password_vector: Vec<char> = password.chars().collect();
     let mut k = length.clone();
