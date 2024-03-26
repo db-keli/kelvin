@@ -1,5 +1,4 @@
 use bcrypt::verify;
-//use bcrypt::BcryptError;
 use bcrypt::{hash, DEFAULT_COST};
 use rand::thread_rng;
 use rand::Rng;
@@ -100,16 +99,15 @@ mod test {
         assert_eq!(admin.password, password_test);
     }
 
-    //#[test]
-    //fn test_verify_function() {
-    //    let password_test: String = generate_password(12);
-    //    let name: String = String::from("Michael");
-    //    let admin: Admin = Admin::new(&name, &password_test);
-    //    let _ = admin.hash_password();
-    //    let _input_password: String = String::from("342323423884324");
+    #[test]
+    fn test_verify_function() {
+        let password: String = generate_password(12);
+        let name: String = String::from("Michael");
+        let mut admin: Admin = Admin::new(&name, &password);
 
-    //    let end = admin.verify_password(password_test);
+        admin.hash_password();
 
-    //   assert!(end.contains("There's a failure somewhere"));
-    //}
+        let input_password = generate_password(12);
+        assert!(!admin.verify_password(&input_password));
+    }
 }
