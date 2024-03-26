@@ -100,6 +100,17 @@ mod test {
     }
 
     #[test]
+    fn test_hash_function() {
+        let password_test: String = generate_password(12);
+        let name: String = String::from("Michael");
+        let mut admin: Admin = Admin::new(&name, &password_test);
+
+        admin.hash_password();
+
+        assert_ne!(admin.password, password_test);
+    }
+
+    #[test]
     fn test_verify_function() {
         let password: String = generate_password(12);
         let name: String = String::from("Michael");
