@@ -1,5 +1,5 @@
 use bcrypt::BcryptError;
-use bcrypt::{hash, verify};
+use bcrypt::{hash, verify, DEFAULT_COST};
 use rand::thread_rng;
 use rand::Rng;
 
@@ -19,12 +19,19 @@ impl Admin {
         Admin { username, password }
     }
 
+    //Could be generic
     pub fn hash_password(&self) -> Result<String, BcryptError> {
-        hash(&self.password, 20)
+        hash(&self.password, DEFAULT_COST)
     }
 
-    pub fn verify_password(&self) -> Result<bool, BcryptError> {
-        verify(&str, String)
+    //Could be generic
+    pub fn verify_password(&self, input_password: String) -> &str {
+        let p = self.hash_password().expect("Failed to hash password");
+        match verify(p, &input_password) {
+            Ok(true) => "Access Accepted",
+            Ok(false) => "Access Denied",
+            Err(_bcrypt_error) => "There's a failure somewhere",
+        }
     }
 }
 
@@ -68,10 +75,11 @@ impl Deck {
 
 #[cfg(test)]
 mod test {
+
     use super::*;
 
     #[test]
-    fn valid_password() {
+    fn valid_password_generation() {
         let ascii_chars: Vec<char> = (33..=126).map(|c| c as u8 as char).collect();
         let length = 7;
         let password_vector: Vec<char> = generate_password(length).chars().collect();
@@ -81,9 +89,22 @@ mod test {
 
     #[test]
     fn constructor_valid() {
-        let password_test = generate_password(12);
-        let name_test = String::from("Michael");
-        let admin = Admin::new(&name_test, &password_test);
+        let password_test: String = generate_password(12);
+        let name: String = String::from("Michael");
+        let admin: Admin = Admin::new(&name, &password_test);
         assert_eq!(admin.password, password_test);
+    }
+
+    #[test]
+    fn test_verify_function() {
+        let password_test: String = generate_password(12);
+        let name: String = String::from("Michael");
+        let admin: Admin = Admin::new(&name, &password_test);
+        let _ = admin.hash_password();
+        let _input_password: String = String::from("342323423884324");
+
+        let end = admin.verify_password(password_test);
+
+        assert!(end.contains("There's a failure somewhere"));
     }
 }
