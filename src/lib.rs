@@ -1,5 +1,6 @@
-use bcrypt::BcryptError;
-use bcrypt::{hash, verify, DEFAULT_COST};
+use bcrypt::verify;
+//use bcrypt::BcryptError;
+use bcrypt::{hash, DEFAULT_COST};
 use rand::thread_rng;
 use rand::Rng;
 
@@ -20,15 +21,15 @@ impl Admin {
     }
 
     //Could be generic
-    pub fn hash_password(&self) -> Result<String, BcryptError> {
-        hash(&self.password, DEFAULT_COST)
+    pub fn hash_password(&mut self) {
+        let hashed_password = hash(&self.password, DEFAULT_COST).expect("Failed to hash password");
+
+        self.password = hashed_password;
     }
 
     //Could be generic
-    pub fn verify_password(&self, input_password: String) -> Result<bool, BcryptError> {
-        let p = self.hash_password().expect("Failed to hash password");
-
-        verify(p, &input_password)
+    pub fn verify_password(&self, input_password: &str) -> bool {
+        matches!(verify(input_password, &self.password), Ok(true))
 
         //.expect("Failed to hash password");
         //match verify(p, &input_password) {
