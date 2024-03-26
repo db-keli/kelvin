@@ -1,3 +1,5 @@
+use bcrypt::BcryptError;
+use bcrypt::{hash, verify};
 use rand::thread_rng;
 use rand::Rng;
 
@@ -8,6 +10,7 @@ pub struct Admin {
     pub password: String,
 }
 
+#[warn(dead_code)]
 impl Admin {
     pub fn new(name: &str, pass: &str) -> Admin {
         let username = name.to_string();
@@ -15,12 +18,13 @@ impl Admin {
 
         Admin { username, password }
     }
-}
 
-#[warn(dead_code)]
-impl Admin {
-    pub fn hash_password(&self, pass: String) -> String {
-        pass
+    pub fn hash_password(&self) -> Result<String, BcryptError> {
+        hash(&self.password, 20)
+    }
+
+    pub fn verify_password(&self) -> Result<bool, BcryptError> {
+        verify(&str, String)
     }
 }
 
@@ -47,7 +51,7 @@ pub fn generate_password(length: usize) -> String {
     password
 }
 
-//Add Password
+//Add a deck
 pub struct Deck {
     pub domain: String,
     pub plaintext: String,
