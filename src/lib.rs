@@ -29,13 +29,6 @@ impl Admin {
     //Could be generic
     pub fn verify_password(&self, input_password: &str) -> bool {
         matches!(verify(input_password, &self.password), Ok(true))
-
-        //.expect("Failed to hash password");
-        //match verify(p, &input_password) {
-        //    Ok(true) => "Access Accepted",
-        //    Ok(false) => "Access Denied",
-        //    Err(_) => "There's a failure somewhere",
-        // }
     }
 }
 
@@ -61,11 +54,9 @@ pub fn generate_password(length: usize) -> String {
     password = password_vector.iter().collect();
     password
 }
-
 //Generic function to save into a file
 //Save admin name and hashed_password
 //Save a deck thus domain, ciphertext, nonce and key
-
 pub fn save<T>(_element: &T) {
     println!("Saving elements come here");
 }
