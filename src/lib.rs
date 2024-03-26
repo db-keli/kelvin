@@ -62,6 +62,14 @@ pub fn generate_password(length: usize) -> String {
     password
 }
 
+//Generic function to save into a file
+//Save admin name and hashed_password
+//Save a deck thus domain, ciphertext, nonce and key
+
+pub fn save<T>(_element: &T) {
+    println!("Saving elements come here");
+}
+
 //Add a deck
 pub struct Deck {
     pub domain: String,
@@ -74,6 +82,10 @@ impl Deck {
         let plaintext = plaintext.to_string();
 
         Deck { domain, plaintext }
+    }
+
+    pub fn encrypt(&self) {
+        println!("Encyption comes here");
     }
 }
 
