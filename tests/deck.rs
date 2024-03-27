@@ -1,6 +1,5 @@
 use kelvin::deck::deck::*;
 use kelvin::generate_password;
-use rsa::Pkcs1v15Encrypt;
 
 #[test]
 fn test_encryption(){

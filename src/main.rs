@@ -8,26 +8,24 @@ fn main() {
     let length = 20;
     let username = String::from("Michael");
     let pass = generate_password(length);
+    println!("Admin's password is {}", pass);
 
-    let mut admin1 = Admin::new(&username, &pass);
+    let admin1 = Admin::new(&username, &pass);
     let deck1 = Deck::new(&admin1.username, &admin1.password);
+    
+    deck1.encrypt();
 
-    println!(
-        "His name is {} and his admin password is {}",
-        admin1.username, admin1.password
-    );
-    println!(
-        "He added a new acount name {} with a password of {}",
-        deck1.domain, deck1.plaintext
-    );
+    let dec_data = deck1.decrypt();
 
-    admin1.hash_password();
-    println!("Password updated to {}", admin1.password);
-    let password_to_verify = &pass;
+    let pass_test = String::from_utf8(dec_data);
 
-    if admin1.verify_password(password_to_verify) {
-        println!("FInally");
-    } else {
-        println!("Fuck")
+    match pass_test {
+        Ok(string) => {
+            println!("{}", string);
+        }
+        Err(err) => {
+            println!("{}", err);
+        }
     }
+    
 }
