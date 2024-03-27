@@ -6,10 +6,10 @@ use rsa::Pkcs1v15Encrypt;
 fn test_encryption(){
     let plaintext = generate_password(21); 
     let deck1 = Deck::new("google.com", &plaintext);
-    let mut keys = get_keys();
     
-    let encrypted_data = deck1.encrypt();
-    let encrypted_data2 = keys.1.encrypt(&mut keys.2, Pkcs1v15Encrypt, &plaintext.as_bytes()[..]).expect("Failed to encrypt");    
+    deck1.encrypt();
 
-    assert_eq!(encrypted_data, encrypted_data2);
+    let test_plaintext = &deck1.decrypt()[..];
+
+    assert_eq!(&plaintext.as_bytes()[..], test_plaintext);
 }
