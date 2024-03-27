@@ -1,4 +1,4 @@
-use aes_gcm::{Aes256Gcm, Key, Nonce, Tag};
+//use aes_gcm::{Aes256Gcm, Key, Nonce, Tag};
 
 //Add a deck
 pub struct Deck {
@@ -14,5 +14,5 @@ impl Deck {
         Deck { domain, plaintext }
     }
 
-    pub fn encrypt(&self) {}
+    pub fn _encrypt(&self) {}
 }

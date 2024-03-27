@@ -1,6 +1,9 @@
 mod admin;
-use kelvin::{generate_password, Admin, Deck};
+mod deck;
+use kelvin::generate_password;
 
+use deck::deck::*;
+use admin::admin::*;
 fn main() {
     let length = 20;
     let username = String::from("Michael");
@@ -20,7 +23,7 @@ fn main() {
 
     admin1.hash_password();
     println!("Password updated to {}", admin1.password);
-    let password_to_verify: &str = "Mike";
+    let password_to_verify = &pass;
 
     if admin1.verify_password(password_to_verify) {
         println!("FInally");

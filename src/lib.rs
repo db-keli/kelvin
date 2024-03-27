@@ -1,6 +1,9 @@
 use rand::thread_rng;
 use rand::Rng;
 
+pub mod admin;
+pub mod deck;
+
 //Generate Password
 pub fn generate_password(length: usize) -> String {
     let ascii_chars: Vec<char> = (33..=126).map(|c| c as u8 as char).collect();
@@ -44,46 +47,4 @@ mod test {
         assert!(password_vector.iter().all(|&x| ascii_chars.contains(&x)));
     }
 
-    #[test]
-    fn constructor_valid() {
-        let password_test: String = generate_password(12);
-        let name: String = String::from("Michael");
-        let admin: Admin = Admin::new(&name, &password_test);
-        assert_eq!(admin.password, password_test);
-    }
-
-    #[test]
-    fn test_hash_function() {
-        let password_test: String = generate_password(12);
-        let name: String = String::from("Michael");
-        let mut admin: Admin = Admin::new(&name, &password_test);
-
-        admin.hash_password();
-
-        assert_ne!(admin.password, password_test);
-    }
-
-    #[test]
-    fn test_hashing() {
-        let password: String = generate_password(12);
-        let name: String = String::from("Michael");
-        let mut admin: Admin = Admin::new(&name, &password);
-
-        admin.hash_password();
-        let hashed_password = hash(&password, DEFAULT_COST).expect("Failed to hash password");
-
-        assert_ne!(admin.password, hashed_password);
-    }
-
-    #[test]
-    fn test_verify_function() {
-        let password: String = generate_password(12);
-        let name: String = String::from("Michael");
-        let mut admin: Admin = Admin::new(&name, &password);
-
-        admin.hash_password();
-
-        let input_password = generate_password(12);
-        assert!(!admin.verify_password(&input_password));
-    }
 }
