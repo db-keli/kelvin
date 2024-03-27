@@ -1,8 +1,3 @@
-pub mod admin;
-use admin::*;
-use bcrypt::{hash, DEFAULT_COST};
-
-use aes_gcm::{Aes256Gcm, Key, Nonce, Tag};
 use rand::thread_rng;
 use rand::Rng;
 
@@ -33,23 +28,6 @@ pub fn generate_password(length: usize) -> String {
 //Save a deck thus domain, ciphertext, nonce and key
 pub fn save<T>(_element: &T) {
     println!("Saving elements come here");
-}
-
-//Add a deck
-pub struct Deck {
-    pub domain: String,
-    pub plaintext: String,
-}
-
-impl Deck {
-    pub fn new(domain: &str, plaintext: &str) -> Deck {
-        let domain = domain.to_string();
-        let plaintext = plaintext.to_string();
-
-        Deck { domain, plaintext }
-    }
-
-    pub fn encrypt(&self) {}
 }
 
 #[cfg(test)]

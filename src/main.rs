@@ -1,3 +1,4 @@
+mod admin;
 use kelvin::{generate_password, Admin, Deck};
 
 fn main() {
