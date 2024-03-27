@@ -1,11 +1,15 @@
 use kelvin::deck::deck::*;
-use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
-use rand::{random, rngs::ThreadRng, thread_rng};
+use kelvin::generate_password;
+use rsa::Pkcs1v15Encrypt;
 
-let deck1 = 
 #[test]
-fn test_get_keys(){
+fn test_encryption(){
+    let plaintext = generate_password(21); 
+    let deck1 = Deck::new("google.com", &plaintext);
     let mut keys = get_keys();
+    
+    let encrypted_data = deck1.encrypt();
+    let encrypted_data2 = keys.1.encrypt(&mut keys.2, Pkcs1v15Encrypt, &plaintext.as_bytes()[..]).expect("Failed to encrypt");    
 
-    assert!()
+    assert_eq!(encrypted_data, encrypted_data2);
 }
