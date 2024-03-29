@@ -4,6 +4,10 @@ use rand::Rng;
 pub mod admin;
 pub mod deck;
 
+use admin::admin::Admin;
+use serde::{Deserialize, Serialize};
+use serde_json::to_string;
+
 //Generate Password
 pub fn generate_password(length: usize) -> String {
     let ascii_chars: Vec<char> = (33..=126).map(|c| c as u8 as char).collect();
@@ -29,8 +33,30 @@ pub fn generate_password(length: usize) -> String {
 //Generic function to save into a file
 //Save admin name and hashed_password
 //Save a deck thus domain, ciphertext, nonce and key
-pub fn save<T>(_element: &T) {
-    println!("Saving elements come here");
+#[derive(Serialize, Deserialize)]
+pub struct DeckData {
+    admin_data: Admin,
+    domain: String,
+    ciphertext: Vec<u8>,
+}
+
+impl DeckData {
+    pub fn new(admin_data: Admin, domain: String, ciphertext: Vec<u8>) -> DeckData {
+        DeckData {
+            admin_data,
+            domain,
+            ciphertext,
+        }
+    }
+
+    pub fn serialize_struct(&self) {
+        let dat_ser = to_string(self);
+        if let Err(err) = &dat_ser {
+            eprintln!("Serialization error: {}", err);
+        }
+
+        println!("{}", dat_ser.ok().unwrap());
+    }
 }
 
 #[cfg(test)]
@@ -46,5 +72,4 @@ mod test {
 
         assert!(password_vector.iter().all(|&x| ascii_chars.contains(&x)));
     }
-
 }

@@ -1,7 +1,9 @@
 use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
-
+use serde::{Deserialize, Serialize};
 //Admin Account Boilerplate
+
+#[derive(Serialize, Deserialize)]
 #[warn(dead_code)]
 pub struct Admin {
     pub username: String,
@@ -19,8 +21,7 @@ impl Admin {
 
     //Could be generic
     pub fn hash_password(&mut self) {
-        let hashed_password =
-            hash(&self.password, DEFAULT_COST).expect("Failed to hash password");
+        let hashed_password = hash(&self.password, DEFAULT_COST).expect("Failed to hash password");
 
         self.password = hashed_password;
     }
@@ -30,4 +31,3 @@ impl Admin {
         matches!(verify(input_password, &self.password), Ok(true))
     }
 }
-

@@ -1,7 +1,9 @@
 use rand::{rngs::ThreadRng, thread_rng};
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
+use serde::{Deserialize, Serialize};
 
-//Add a deck
+//Add a Deck
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
     pub domain: String,
     pub plaintext: String,
