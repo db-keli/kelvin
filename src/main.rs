@@ -12,7 +12,10 @@ fn main() {
     let pass = generate_password(length);
     println!("Admin's password is {}", pass);
 
-    let admin1 = Admin::new(&username, &pass);
+    let mut admin1 = Admin::new(&username, &pass);
+
+    admin1.hash_password();
+
     let deck1 = Deck::new(&admin1.username, &admin1.password);
 
     let dec_pass = deck1.encrypt();
