@@ -39,4 +39,12 @@ fn main() {
     let data = DeckData::new(admin1, deck1.domain, dec_pass.0);
     data.serialize_struct();
     let _ = data.save_to_json();
+
+    //Load Data from json
+
+    let filepath = "data.json";
+    match DeckData::load_from_json(filepath) {
+        Ok(deck_data) => println!("{:?}", deck_data),
+        Err(err) => eprintln!("Error: {}", err),
+    }
 }

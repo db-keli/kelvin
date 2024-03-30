@@ -3,7 +3,7 @@ use bcrypt::{hash, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 //Admin Account Boilerplate
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]
 pub struct Admin {
     pub username: String,
