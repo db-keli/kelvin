@@ -19,31 +19,35 @@ fn main() {
     admin1.hash_password();
 
     //Add a dack and encrypt
-    let deck1 = Deck::new(&admin1.username, &admin1.password);
-    let dec_pass = deck1.encrypt();
+    //let deck1 = Deck::new(&admin1.username, &admin1.password);
+    let deck2 = Deck::new("google.com", "kekelidompehfuckseveryone");
+    //let dec_pass = deck1.encrypt();
+    let dec_pass2 = deck2.encrypt();
 
     // Decrypting the data and printing it out
-    let dec_data = deck1.decrypt();
-    let pass_test = String::from_utf8(dec_data);
+    //let dec_data = deck1.decrypt();
+    //let pass_test = String::from_utf8(dec_data);
 
-    match pass_test {
-        Ok(string) => {
-            println!("{}", string);
-        }
-        Err(err) => {
-            println!("{}", err);
-        }
-    }
+    //match pass_test {
+    //    Ok(string) => {
+    //        println!("{}", string);
+    //      }
+    //    Err(err) => {
+    //       println!("{}", err);
+    //    }
+    // }
 
     // Data to json to save to file
-    let data = DeckData::new(admin1, deck1.domain, dec_pass.0);
-    data.serialize_struct();
-    let _ = data.save_to_json();
+    //let data = DeckData::new(admin1, deck1.domain, dec_pass.0);
+    //
+    let data2 = DeckData::new(admin1, deck2.domain.clone(), dec_pass2.0);
+    data2.serialize_struct();
+    let _ = data2.save_to_json();
 
     //Load Data from json
 
     let filepath = "data.json";
-    match DeckData::load_from_json(filepath) {
+    match DeckData::load_from_json(filepath, &deck2.domain) {
         Ok(deck_data) => println!("{:?}", deck_data),
         Err(err) => eprintln!("Error: {}", err),
     }

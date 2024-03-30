@@ -51,14 +51,19 @@ impl DeckData {
         Ok(())
     }
 
-    pub fn load_from_json(filepath: &str) -> Result<Vec<DeckData>> {
+    pub fn load_from_json(filepath: &str, domain: &str) -> Result<()> {
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
         file.read_to_string(&mut json_data)?;
 
-        let deck_data: Vec<DeckData> = serde_json::from_str(&json_data)?;
+        for line in json_data.split('\n').collect::<Vec<_>>() {
+            if line.contains(domain) {
+                println!("{:#?}", line);
+            }
+            //let deck_data: Vec<DeckData> = serde_json::from_str(&json_data)?;
+        }
 
-        Ok(deck_data)
+        Ok(())
     }
 }
 
