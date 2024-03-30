@@ -8,9 +8,10 @@ use admin::admin::Admin;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 
-//Generic function to save into a file
-//Save admin name and hashed_password
-//Save a deck thus domain, ciphertext, nonce and key
+use std::fs::{self, OpenOptions};
+use std::io::{self, prelude::*, Result};
+
+//Data to save
 #[derive(Serialize, Deserialize)]
 pub struct DeckData {
     admin_data: Admin,
@@ -27,13 +28,28 @@ impl DeckData {
         }
     }
 
-    pub fn serialize_struct(&self) {
-        let dat_ser = to_string(self);
+    pub fn serialize_struct(&self) -> String {
+        let dat_ser = to_string(&vec![self]);
         if let Err(err) = &dat_ser {
-            eprintln!("Serialization error: {}", err);
+            err.to_string()
+        } else {
+            dat_ser.unwrap()
         }
+    }
 
-        println!("{}", dat_ser.ok().unwrap());
+    pub fn save_to_json(&self) -> Result<()> {
+        let contents = format!("\n{}\n", self.serialize_struct());
+        let filepath = "data.json";
+
+        if fs::metadata(filepath).is_ok() {
+            let mut file = OpenOptions::new().write(true).append(true).open(filepath)?;
+
+            file.write_all(contents.as_bytes())?;
+            Ok(())
+        } else {
+            fs::write("data.json", contents)?;
+            Ok(())
+        }
     }
 }
 
