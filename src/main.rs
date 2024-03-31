@@ -47,9 +47,8 @@ fn main() {
 
     //Load Data from json
 
-    let filepath = format!("./data/{}.json", deck2.domain);
-    match DeckData::read_data_from_json(filepath, &deck2.domain) {
-        Ok(deck_data) => println!("{:?}", deck_data),
-        Err(err) => eprintln!("Error: {}", err),
-    }
+    let result = data2.read_data_from_json().unwrap();
+
+    let admin_out = result.admin_data;
+    
 }
