@@ -35,18 +35,18 @@ impl Deck {
             .1
             .encrypt(&mut keys.2, Pkcs1v15Encrypt, &plaintext[..])
             .expect("Failed to encrypt");
-
+        
         (encrypted_data, keys)
     }
 
-    pub fn decrypt(&self) -> Vec<u8> {
-        let encrypted_data = self.encrypt();
-        let dec_data = encrypted_data
-            .1
-             .0
-            .decrypt(Pkcs1v15Encrypt, &encrypted_data.0)
-            .expect("failed to decrypt");
+    // pub fn decrypt(&self) -> Vec<u8> {
+    //     let encrypted_data = self.encrypt();
+    //     let dec_data = encrypted_data
+    //         .1
+    //          .0
+    //         .decrypt(Pkcs1v15Encrypt, &encrypted_data.0)
+    //         .expect("failed to decrypt");
 
-        dec_data
-    }
+    //     dec_data
+    // }
 }
