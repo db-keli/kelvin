@@ -1,9 +1,11 @@
 use rand::thread_rng;
 use rand::Rng;
+use std::io::{Result, stdout, Write, stdin};
 
 pub mod admin;
 pub mod deck;
 pub mod deckdata;
+use rpassword;
 
 //Generate Password
 pub fn generate_password(length: usize) -> String {
@@ -26,6 +28,19 @@ pub fn generate_password(length: usize) -> String {
 
     password = password_vector.iter().collect();
     password
+}
+
+
+pub fn prompt_password(prompt: &str) -> Result<String> {
+    let _ = stdout().flush();
+
+    print!("{}", prompt);
+    stdout().flush()?;
+
+    let password = rpassword::read_password()?;
+    println!();
+
+    Ok(password)
 }
 
 #[cfg(test)]
