@@ -73,12 +73,12 @@ impl DeckData {
         Ok(deck_data)
     }
 
-    pub fn string_to_keys(&self) -> (RsaPrivateKey, RsaPublicKey) {
-        let private_key = RsaPrivateKey::from_pkcs1_pem(&self.rsa_private_key).unwrap();
-        let public_key = RsaPublicKey::from_pkcs1_pem(&self.rsa_public_key).unwrap();
+    // pub fn string_to_keys(&self) -> (RsaPrivateKey, RsaPublicKey) {
+    //     let private_key = RsaPrivateKey::from_pkcs1_pem(&self.rsa_private_key).unwrap();
+    //     let public_key = RsaPublicKey::from_pkcs1_pem(&self.rsa_public_key).unwrap();
 
-        (private_key, public_key)        
-    }
+    //     (private_key, public_key)        
+    // }
 
     
 
