@@ -16,7 +16,7 @@ fn main() {
     println!("admin's password after hashing: {:?}", admin.password);
 
     //Adding a deck
-    let domain = "google.com";
+    let domain = "www.github.com";
     let password = generate_password(12);
     let deck1 = Deck::new(&domain, &password);
 
