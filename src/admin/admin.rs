@@ -51,34 +51,23 @@ impl Admin {
         file.read_to_string(&mut json_data)?;
         file.flush()?;
 
-        println!("{}", json_data);
-        let deck_data_vec: Vec<Admin> = serde_json::from_str(&json_data)?;
+        let admin_data_vec: Vec<Admin> = serde_json::from_str(&json_data)?;
 
-        // Extract the first item from the vector (assuming it contains only one item)
-        let deck_data = deck_data_vec
+        let admin_data = admin_data_vec
             .into_iter()
             .next()
             .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No data found in JSON"))?;
 
-        Ok(deck_data)
+        Ok(admin_data)
     }
 
-    pub fn prompt_auth(&self) -> Result<(String, String, bool)> {
-        let _ = stdout().flush();
+    pub fn prompt_auth(&self, username: String, password: String) -> Result<(String, String, bool)> {
+        let temp_admin = self.read_data_from_json().unwrap();
 
-        print!("Enter username:");
-        stdout().flush()?;
-
-        let mut username = String::new();
-        stdin()
-            .read_line(&mut username)
-            .expect("Failed to read line");
-
-        print!("Enter password:");
-        stdout().flush()?;
-        let password = rpassword::read_password()?;
-        print!("");
-
-        Ok((username, password, true))
+        if temp_admin.username == username && self.verify_password(&password) {
+            Ok((username, password, true))
+        } else {
+            Ok((username, password, false))
+        }
     }
-}
+} 
