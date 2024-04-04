@@ -64,7 +64,6 @@ impl DeckData {
         println!("{}", json_data);
         let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
 
-        // Extract the first item from the vector (assuming it contains only one item)
         let deck_data = deck_data_vec
             .into_iter()
             .next()

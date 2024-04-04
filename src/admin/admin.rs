@@ -51,23 +51,18 @@ impl Admin {
         file.read_to_string(&mut json_data)?;
         file.flush()?;
 
-        let admin_data_vec: Vec<Admin> = serde_json::from_str(&json_data)?;
-
-        let admin_data = admin_data_vec
-            .into_iter()
-            .next()
-            .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No data found in JSON"))?;
+        let admin_data: Admin = serde_json::from_str(&json_data)?;
 
         Ok(admin_data)
     }
 
-    pub fn prompt_auth(&self, username: String, password: String) -> Result<(String, String, bool)> {
+    pub fn prompt_auth(&self, username: String, password: String) -> Result<bool> {
         let temp_admin = self.read_data_from_json().unwrap();
 
         if temp_admin.username == username && self.verify_password(&password) {
-            Ok((username, password, true))
+            Ok(true)
         } else {
-            Ok((username, password, false))
+            Ok(false)
         }
     }
 } 

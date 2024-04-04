@@ -2,12 +2,10 @@ mod admin;
 mod deck;
 mod deckdata;
 
-use std::os::unix::fs;
 use std::io::{ErrorKind, Error};
 
-use fs::chroot;
 use admin::admin::Admin;
-use clap::{Arg, Command};
+use clap::Command;
 use deck::deck::Deck;
 use deckdata::deckdata::DeckData;
 use kelvin::{generate_password, prompt_logins, check_file_exists1, read_user_data};
@@ -43,8 +41,18 @@ fn main() {
         let username = logins.0.trim().to_string();
         let password = logins.1.trim().to_string();
         let admin_logins = Admin::new(&username, &password);
-        let status = admin_logins.read_data_from_json().unwrap();
-        
+        let status = admin_logins.read_data_from_json();
+        if let Err(err) = &status {
+            print!("{}", err);
+        } else {
+            let status = status.unwrap();
+            if status.prompt_auth(username, password).unwrap(){
+                print!("You're authorized");
+            } else {
+                println!("You're unathorized");
+            }
+        }
+
 
     } else if let Some(matches) = matches.subcommand_matches("reset") {
         //Reset the vault
