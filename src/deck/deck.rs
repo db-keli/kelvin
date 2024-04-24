@@ -1,6 +1,10 @@
 use rand::{rngs::ThreadRng, thread_rng};
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::{Error, ErrorKind, Read, Result, Write};
+
+use crate::deckdata::deckdata::DeckData;
 
 //Add a Deck
 #[derive(Serialize, Deserialize, Debug)]
@@ -39,6 +43,24 @@ impl Deck {
         (encrypted_data, keys)
     }
 
+    #[allow(dead_code)]
+    pub fn read_data_from_json(&self) -> Result<DeckData> {
+        let filepath = format!("./data/{}.json", self.domain);
+        let mut file = File::open(filepath)?;
+        let mut json_data = String::new();
+        file.read_to_string(&mut json_data)?;
+        file.flush()?;
+
+        println!("{}", json_data);
+        let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
+
+        let deck_data = deck_data_vec
+            .into_iter()
+            .next()
+            .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No data found in JSON"))?;
+
+        Ok(deck_data)
+    }
     // pub fn decrypt(&self) -> Vec<u8> {
     //     let encrypted_data = self.encrypt();
     //     let dec_data = encrypted_data

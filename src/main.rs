@@ -2,14 +2,14 @@ mod admin;
 mod deck;
 mod deckdata;
 
-use std::io::{Error, ErrorKind};
+use std::{fs::read, io::{Error, ErrorKind}};
 
 use admin::admin::Admin;
 use bcrypt::{hash, DEFAULT_COST};
 use clap::Command;
 use deck::deck::Deck;
 use deckdata::deckdata::DeckData;
-use kelvin::{check_file_exists1, generate_password, prompt_logins, read_user_data, prompt_deck};
+use kelvin::{check_file_exists1, generate_password, prompt_logins, read_user_data, prompt_deck, read_deck_data};
 
 fn main() {
     let matches = Command::new("kelvin")
@@ -19,26 +19,27 @@ fn main() {
         .subcommand(Command::new("create-admin").about("Creates an admin account"))
         .subcommand(Command::new("deck").about("Adds a deck to the vault"))
         .subcommand(Command::new("reset").about("Resets the vault"))
+        .subcommand(Command::new("open-sesame").about("Get password from vault"))
         .get_matches();
 
     let mut status: Option<bool> = None;
-    let mut admin: Option<Admin> = None;
+    let _admin: Option<Admin> = None;
 
-    if let Some(matches) = matches.subcommand_matches("create-admin") {
+    if let Some(_matches) = matches.subcommand_matches("create-admin") {
         let logins = prompt_logins().unwrap();
         let admin_password = logins.1;
         let mut admin = Admin::new(&logins.0, &admin_password);
         admin.hash_password();
         admin.save_to_json().unwrap();
         status = Some(true);
-    } else if let Some(matches) = matches.subcommand_matches("deck") {
+    } else if let Some(_matches) = matches.subcommand_matches("deck") {
         let logins = prompt_logins().unwrap();
         let username = logins.0.trim().to_string();
         let password = logins.1.trim().to_string();
         let admin_logins = Admin::new(&username, &password);
         let status = admin_logins.read_data_from_json();
         if let Err(err) = &status {
-            print!("{}", err);
+            print!("You're not an admin\n{}\n", err);
         } else {
             let status = status.unwrap();
             if status.prompt_auth(username, password).unwrap() {
@@ -52,8 +53,29 @@ fn main() {
                 println!("You're unathorized");
             }
         }
-    } else if let Some(matches) = matches.subcommand_matches("reset") {
-        //Reset the vault
+    } else if let Some(_matches) = matches.subcommand_matches("open-sesame"){
+        let logins = prompt_logins().unwrap();
+        let username = logins.0.trim().to_string();
+        let password = logins.1.trim().to_string();
+        let admin_logins = Admin::new(&username, &password);
+        let status = admin_logins.read_data_from_json();
+        if let Err(err) = &status {
+            print!("You're not an admin\n{}\n", err);
+        } else {
+            let status = status.unwrap();
+            if status.prompt_auth(username, password).unwrap() {
+                println!("Fill details to get password from the Vault.");
+                let deck = prompt_deck().unwrap();
+                let deck = Deck::new(&deck.0, &deck.1);
+                let data = deck.read_data_from_json().unwrap();
+                println!("Password: {:?}", String::from_utf8(data.decrypt()).unwrap());
+            } else {
+                println!("You're unathorized");
+            }
+        }
+
+    } else if let Some(_matches) = matches.subcommand_matches("reset") {
+        //Reset the vaulimport numpy as npt
         status = Some(true);
     }
 

@@ -2,13 +2,17 @@ use crate::admin;
 
 use admin::admin::Admin;
 
+#[allow(unused_imports)]
 use clap::builder::Str;
+
 use rsa::{pkcs1::{self, DecodeRsaPublicKey, EncodeRsaPrivateKey, DecodeRsaPrivateKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 
 use std::fs::File;
 use rsa::pkcs1::EncodeRsaPublicKey;
+
+#[allow(unused_imports)]
 use std::io::{self, prelude::*, Result, stdin, stdout};
 
 //Data to save
@@ -54,7 +58,7 @@ impl DeckData {
 
         Ok(())
     }
-
+    #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
         let filepath = format!("./data/{}.json", self.domain);
         let mut file = File::open(filepath)?;
@@ -82,6 +86,7 @@ impl DeckData {
 
     
 
+    #[allow(dead_code)]
     pub fn decrypt(&self) -> Vec<u8> {
         let private_key = RsaPrivateKey::from_pkcs1_pem(&self.rsa_private_key).unwrap();
         let public_key = RsaPublicKey::from_pkcs1_pem(&self.rsa_public_key).unwrap();
