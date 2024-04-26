@@ -1,12 +1,11 @@
 mod admin;
 mod deck;
 mod deckdata;
-
+use cli_clipboard::{ClipboardProvider, ClipboardContext};
 use std::{fs::read, io::{Error, ErrorKind}};
-
 use admin::admin::Admin;
 use bcrypt::{hash, DEFAULT_COST};
-use clap::Command;
+use clap::{Command, Arg};
 use deck::deck::Deck;
 use deckdata::deckdata::DeckData;
 use kelvin::{check_file_exists1, generate_password, prompt_logins, read_user_data, prompt_deck, read_deck_data};
@@ -16,6 +15,18 @@ fn main() {
         .version("0.0.1")
         .author("Dompeh Kofi Bright, kekelidompeh@gmail.com")
         .about("A password managements system, more of a vault admin")
+        .subcommand(
+            Command::new("generate")
+            .about("Generates password and copies to clipboard")
+            .arg(
+                Arg::new("length")
+                .short('l')
+                .long("length")
+                .required(false)
+                .help("Specify length of passcode to generate")
+            )
+        )
+        .subcommand(Command::new("decrypt").about("Decrypts a deck"))
         .subcommand(Command::new("create-admin").about("Creates an admin account"))
         .subcommand(Command::new("deck").about("Adds a deck to the vault"))
         .subcommand(Command::new("reset").about("Resets the vault"))
@@ -32,6 +43,21 @@ fn main() {
         admin.hash_password();
         admin.save_to_json().unwrap();
         status = Some(true);
+    } else if let Some(matches) = matches.subcommand_matches("generate") {
+        
+        
+        if matches.contains_id("length") {
+            let length = matches.get_one::<String>("length").unwrap().parse::<usize>().unwrap();
+            let password = generate_password(length);
+            println!("{}", password);
+        } else {
+        
+        let password = generate_password(12);
+        let mut ctx = ClipboardContext::new().unwrap();
+
+        ctx.set_contents(password.to_owned()).unwrap();
+        
+        }
     } else if let Some(_matches) = matches.subcommand_matches("deck") {
         let logins = prompt_logins().unwrap();
         let username = logins.0.trim().to_string();
