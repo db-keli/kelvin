@@ -2,20 +2,20 @@ use crate::admin;
 
 use admin::Admin;
 
-#[allow(unused_imports)]
 use clap::builder::Str;
 
-use rsa::{pkcs1::{self, DecodeRsaPublicKey, EncodeRsaPrivateKey, DecodeRsaPrivateKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
+use rsa::{
+    pkcs1::{self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey},
+    Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 
-use std::fs::File;
 use rsa::pkcs1::EncodeRsaPublicKey;
+use std::fs::File;
 
-#[allow(unused_imports)]
-use std::io::{self, prelude::*, Result, stdin, stdout};
+use std::io::{self, prelude::*, stdin, stdout, Result};
 
-//Data to save
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeckData {
     pub domain: String,
@@ -26,9 +26,18 @@ pub struct DeckData {
 }
 
 impl DeckData {
-    pub fn new(admin_data: Admin, domain: String, ciphertext: Vec<u8>, rsa_public_key: RsaPublicKey, rsa_private_key: RsaPrivateKey) -> DeckData {
+    pub fn new(
+        admin_data: Admin,
+        domain: String,
+        ciphertext: Vec<u8>,
+        rsa_public_key: RsaPublicKey,
+        rsa_private_key: RsaPrivateKey,
+    ) -> DeckData {
         let pem_pub = rsa_public_key.to_pkcs1_pem(pkcs1::LineEnding::LF).unwrap();
-        let pem_prv = rsa_private_key.to_pkcs1_pem(pkcs1::LineEnding::LF).unwrap().to_string();
+        let pem_prv = rsa_private_key
+            .to_pkcs1_pem(pkcs1::LineEnding::LF)
+            .unwrap()
+            .to_string();
         DeckData {
             domain,
             ciphertext,
@@ -37,7 +46,6 @@ impl DeckData {
             rsa_private_key: pem_prv,
         }
     }
-
 
     pub fn serialize_struct(&self) -> String {
         let dat_ser = to_string(&vec![self]);
@@ -77,21 +85,12 @@ impl DeckData {
         Ok(deck_data)
     }
 
-    // pub fn string_to_keys(&self) -> (RsaPrivateKey, RsaPublicKey) {
-    //     let private_key = RsaPrivateKey::from_pkcs1_pem(&self.rsa_private_key).unwrap();
-    //     let public_key = RsaPublicKey::from_pkcs1_pem(&self.rsa_public_key).unwrap();
-
-    //     (private_key, public_key)        
-    // }
-
-    
-
     #[allow(dead_code)]
     pub fn decrypt(&self) -> Vec<u8> {
         let private_key = RsaPrivateKey::from_pkcs1_pem(&self.rsa_private_key).unwrap();
         let public_key = RsaPublicKey::from_pkcs1_pem(&self.rsa_public_key).unwrap();
 
-        let keys = (private_key, public_key);     
+        let keys = (private_key, public_key);
         let decrypted_data = keys
             .0
             .decrypt(Pkcs1v15Encrypt, &self.ciphertext)
@@ -99,6 +98,4 @@ impl DeckData {
 
         decrypted_data
     }
-
-
 }

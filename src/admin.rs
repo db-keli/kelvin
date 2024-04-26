@@ -3,7 +3,6 @@ use bcrypt::{hash, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{stdin, stdout, Error, ErrorKind, Read, Result, Write};
-//Admin Account Boilerplate
 
 #[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]
@@ -21,14 +20,12 @@ impl Admin {
         Admin { username, password }
     }
 
-    //Could be generic
     pub fn hash_password(&mut self) {
         let hashed_password = hash(&self.password, DEFAULT_COST).expect("Failed to hash password");
 
         self.password = hashed_password;
     }
 
-    //Could be generic
     pub fn verify_password(&self, input_password: &str) -> bool {
         matches!(verify(input_password, &self.password), Ok(true))
     }
@@ -65,4 +62,4 @@ impl Admin {
             Ok(false)
         }
     }
-} 
+}

@@ -1,10 +1,9 @@
 use admin::Admin;
-use assert_cmd::assert::StrOutputPredicate;
 use deck::Deck;
 use rand::thread_rng;
 use rand::Rng;
-use std::io::{Result, stdout, Write, stdin};
 use std::fs::{read_dir, read_to_string};
+use std::io::{stdin, stdout, Result, Write};
 pub mod admin;
 pub mod deck;
 pub mod deckdata;
@@ -33,7 +32,6 @@ pub fn generate_password(length: usize) -> String {
     password
 }
 
-
 pub fn prompt_password(prompt: &str) -> Result<String> {
     let _ = stdout().flush();
 
@@ -46,7 +44,7 @@ pub fn prompt_password(prompt: &str) -> Result<String> {
     Ok(password)
 }
 
-pub fn prompt_deck() -> Result<(String, String)>{
+pub fn prompt_deck() -> Result<(String, String)> {
     let _ = stdout().flush();
 
     print!("Enter domain:");
@@ -61,8 +59,8 @@ pub fn prompt_deck() -> Result<(String, String)>{
     stdout().flush()?;
     let password = rpassword::read_password()?;
     print!("");
-    println!(); 
-    
+    println!();
+
     Ok((username, password))
 }
 

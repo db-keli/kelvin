@@ -39,7 +39,7 @@ impl Deck {
             .1
             .encrypt(&mut keys.2, Pkcs1v15Encrypt, &plaintext[..])
             .expect("Failed to encrypt");
-        
+
         (encrypted_data, keys)
     }
 
