@@ -1,6 +1,6 @@
 use crate::admin;
 
-use admin::admin::Admin;
+use admin::Admin;
 
 #[allow(unused_imports)]
 use clap::builder::Str;

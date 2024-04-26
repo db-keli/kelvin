@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Result, Write};
 
-use crate::deckdata::deckdata::DeckData;
+use crate::deckdata::DeckData;
 
 //Add a Deck
 #[derive(Serialize, Deserialize, Debug)]

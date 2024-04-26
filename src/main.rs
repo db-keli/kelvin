@@ -3,11 +3,11 @@ mod deck;
 mod deckdata;
 use cli_clipboard::{ClipboardProvider, ClipboardContext};
 use std::{fs::read, io::{Error, ErrorKind}};
-use admin::admin::Admin;
+use admin::Admin;
 use bcrypt::{hash, DEFAULT_COST};
 use clap::{Command, Arg};
-use deck::deck::Deck;
-use deckdata::deckdata::DeckData;
+use deck::Deck;
+use deckdata::DeckData;
 use kelvin::{check_file_exists1, generate_password, prompt_logins, read_user_data, prompt_deck, read_deck_data};
 
 fn main() {
@@ -53,10 +53,7 @@ fn main() {
         } else {
         
         let password = generate_password(12);
-        let mut ctx = ClipboardContext::new().unwrap();
-
-        ctx.set_contents(password.to_owned()).unwrap();
-        
+            println!("{}", password);
         }
     } else if let Some(_matches) = matches.subcommand_matches("deck") {
         let logins = prompt_logins().unwrap();

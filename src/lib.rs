@@ -1,6 +1,6 @@
-use admin::admin::Admin;
+use admin::Admin;
 use assert_cmd::assert::StrOutputPredicate;
-use deck::deck::Deck;
+use deck::Deck;
 use rand::thread_rng;
 use rand::Rng;
 use std::io::{Result, stdout, Write, stdin};
@@ -134,7 +134,7 @@ pub fn read_user_data(username: &str, directory_path: &str) -> Option<Admin> {
     None // Return None if file doesn't exist or deserialization fails
 }
 
-pub fn read_deck_data(domain: &str) -> Option<deckdata::deckdata::DeckData> {
+pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
     let file_path = format!("./data/{}.json", domain);
     if let Ok(file_content) = read_to_string(file_path) {
         if let Ok(deck_data) = serde_json::from_str(&file_content) {
