@@ -5,8 +5,8 @@ use admin::Admin;
 use clap::{Arg, Command};
 use deck::Deck;
 use deckdata::DeckData;
-mod prompt;
 mod password;
+mod prompt;
 
 use password::generate_password;
 use prompt::{prompt_deck, prompt_logins};

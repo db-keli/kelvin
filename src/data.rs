@@ -1,6 +1,5 @@
 use crate::{admin, deckdata};
 
-
 use admin::Admin;
 use std::fs::{read_dir, read_to_string};
 
@@ -37,7 +36,7 @@ pub fn read_user_data(username: &str, directory_path: &str) -> Option<Admin> {
         }
     }
 
-    None 
+    None
 }
 
 pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
