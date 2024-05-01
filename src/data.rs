@@ -55,7 +55,7 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     if output.status.success() {
         let s = String::from_utf8_lossy(&output.stdout);
         println!("{}", s);
-        let output2 = Command::new("gpg").args(["-c", ".vault.tar.gz", "-y"]).output()?;
+        let output2 = Command::new("gpg").args(["-c", ".vault.tar.gz"]).output()?;
         if !output.status.success() {
             let s = String::from_utf8_lossy(&output2.stderr);
             println!("Error: {}", s);
