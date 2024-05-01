@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Result, Write};
 
 use crate::deckdata::DeckData;
+use crate::data::decrypt_directory;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
@@ -44,7 +45,8 @@ impl Deck {
 
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let filepath = format!("./data/{}.json", self.domain);
+        let filepath = format!("./.vault/{}.json", self.domain);
+        let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
         file.read_to_string(&mut json_data)?;

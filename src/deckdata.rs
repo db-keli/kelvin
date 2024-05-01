@@ -1,5 +1,5 @@
 use crate::admin;
-
+use crate::data::{encrypt_directory, decrypt_directory};
 use admin::Admin;
 
 use rsa::{
@@ -56,23 +56,24 @@ impl DeckData {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = self.serialize_struct();
-        let filepath = format!("./data/{}.json", self.domain);
+        let filepath = format!("./.vault/{}.json", self.domain);
+        let _ = decrypt_directory();
 
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
-
+        let _ = encrypt_directory();
         Ok(())
     }
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let filepath = format!("./data/{}.json", self.domain);
+        let filepath = format!("./.vault/{}.json", self.domain);
+        let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
         file.read_to_string(&mut json_data)?;
         file.flush()?;
-
-        println!("{}", json_data);
+        let _ = encrypt_directory();
         let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
 
         let deck_data = deck_data_vec

@@ -1,4 +1,5 @@
 mod admin;
+mod data;
 mod deck;
 mod deckdata;
 use admin::Admin;

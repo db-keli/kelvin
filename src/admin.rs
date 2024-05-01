@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Result, Write};
 
+use crate::data::{encrypt_directory, decrypt_directory};
+
 #[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]
 pub struct Admin {
@@ -32,24 +34,25 @@ impl Admin {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = serde_json::to_string(&self)?;
-        let filepath = format!("./data/{}.json", self.username);
+        let filepath = format!("./.vault/{}.json", self.username);
 
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
-
+        let _ = encrypt_directory()?;
         Ok(())
     }
 
     pub fn read_data_from_json(&self) -> Result<Admin> {
-        let filepath = format!("./data/{}.json", self.username);
+        let filepath = format!("./.vault/{}.json", self.username);
+        let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
         file.read_to_string(&mut json_data)?;
         file.flush()?;
 
         let admin_data: Admin = serde_json::from_str(&json_data)?;
-
+        
         Ok(admin_data)
     }
 

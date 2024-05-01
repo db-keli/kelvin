@@ -1,18 +1,6 @@
 use rpassword;
 use std::io::{stdin, stdout, Result, Write};
 
-pub fn prompt_password(prompt: &str) -> Result<String> {
-    let _ = stdout().flush();
-
-    print!("{}", prompt);
-    stdout().flush()?;
-
-    let password = rpassword::read_password()?;
-    println!();
-
-    Ok(password)
-}
-
 pub fn prompt_deck() -> Result<(String, String)> {
     let _ = stdout().flush();
 
