@@ -16,7 +16,7 @@ fn main() {
     let matches = Command::new("kelvin")
         .version("0.0.1")
         .author("Dompeh Kofi Bright, kekelidompeh@gmail.com")
-        .about("A password managements system, more of a vault admin")
+        .about("A password management system, more of a vault admin")
         .subcommand(
             Command::new("generate")
                 .about("Generates password and copies to clipboard")

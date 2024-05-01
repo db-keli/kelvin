@@ -57,8 +57,6 @@ impl DeckData {
     pub fn save_to_json(&self) -> Result<()> {
         let contents = self.serialize_struct();
         let filepath = format!("./.vault/{}.json", self.domain);
-        let _ = decrypt_directory();
-
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
