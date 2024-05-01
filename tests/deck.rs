@@ -5,9 +5,9 @@
 
 //#[test]
 // fn test_encryption(){
-//     let plaintext = generate_password(21); 
+//     let plaintext = generate_password(21);
 //     let deck1 = Deck::new("google.com", &plaintext);
-    
+
 //     let admin1 = Admin::new("Michael", &generate_password(12));
 
 //     let encrypted_data = deck1.encrypt();

@@ -2,7 +2,7 @@ use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{stdin, stdout, Error, ErrorKind, Read, Result, Write};
+use std::io::{Read, Result, Write};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]

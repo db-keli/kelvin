@@ -2,8 +2,6 @@ use crate::admin;
 
 use admin::Admin;
 
-use clap::builder::Str;
-
 use rsa::{
     pkcs1::{self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey},
     Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
@@ -14,7 +12,7 @@ use serde_json::to_string;
 use rsa::pkcs1::EncodeRsaPublicKey;
 use std::fs::File;
 
-use std::io::{self, prelude::*, stdin, stdout, Result};
+use std::io::{self, prelude::*, Result};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeckData {

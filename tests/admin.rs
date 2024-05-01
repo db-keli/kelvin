@@ -1,6 +1,6 @@
-use kelvin::generate_password;
-use kelvin::admin::admin::*;
 use bcrypt::{hash, DEFAULT_COST};
+use kelvin::admin::*;
+use kelvin::password::generate_password;
 
 #[test]
 fn constructor_valid() {
@@ -44,4 +44,3 @@ fn test_verify_function() {
     let input_password = generate_password(12);
     assert!(!admin.verify_password(&input_password));
 }
-

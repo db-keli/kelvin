@@ -2,19 +2,14 @@ mod admin;
 mod deck;
 mod deckdata;
 use admin::Admin;
-use bcrypt::{hash, DEFAULT_COST};
 use clap::{Arg, Command};
-use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use deck::Deck;
 use deckdata::DeckData;
-use kelvin::{
-    check_file_exists1, generate_password, prompt_deck, prompt_logins, read_deck_data,
-    read_user_data,
-};
-use std::{
-    fs::read,
-    io::{Error, ErrorKind},
-};
+mod prompt;
+mod password;
+
+use password::generate_password;
+use prompt::{prompt_deck, prompt_logins};
 
 fn main() {
     let matches = Command::new("kelvin")
@@ -115,5 +110,4 @@ fn main() {
     } else if let Some(_matches) = matches.subcommand_matches("reset") {
         status = Some(true);
     }
-
 }

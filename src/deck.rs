@@ -6,7 +6,6 @@ use std::io::{Error, ErrorKind, Read, Result, Write};
 
 use crate::deckdata::DeckData;
 
-//Add a Deck
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
     pub domain: String,
@@ -61,14 +60,4 @@ impl Deck {
 
         Ok(deck_data)
     }
-    // pub fn decrypt(&self) -> Vec<u8> {
-    //     let encrypted_data = self.encrypt();
-    //     let dec_data = encrypted_data
-    //         .1
-    //          .0
-    //         .decrypt(Pkcs1v15Encrypt, &encrypted_data.0)
-    //         .expect("failed to decrypt");
-
-    //     dec_data
-    // }
 }
