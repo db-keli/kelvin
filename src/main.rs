@@ -10,9 +10,12 @@ mod password;
 mod prompt;
 
 use password::generate_password;
-use prompt::{prompt_deck, prompt_logins};
+use prompt::{prompt_deck, prompt_logins, initialize_vault};
+use std::process;
+
 
 fn main() {
+    initialize_vault().unwrap();
     let matches = Command::new("kelvin")
         .version("0.0.1")
         .author("Dompeh Kofi Bright, kekelidompeh@gmail.com")
@@ -28,7 +31,6 @@ fn main() {
                         .help("Specify length of passcode to generate"),
                 ),
         )
-        .subcommand(Command::new("decrypt").about("Decrypts a deck"))
         .subcommand(Command::new("create-admin").about("Creates an admin account"))
         .subcommand(Command::new("deck").about("Adds a deck to the vault"))
         .subcommand(Command::new("reset").about("Resets the vault"))
@@ -53,9 +55,17 @@ fn main() {
                 .parse::<usize>()
                 .unwrap();
             let password = generate_password(length);
+            process::Command::new("echo")
+                .args([&password, "|", "xclip", "-sel", "clip"])
+                .output()
+                .unwrap();
             println!("{}", password);
         } else {
             let password = generate_password(12);
+            process::Command::new("echo")
+                .args([&password, "|", "xclip", "-selection", "clipboard"])
+                .output()
+                .unwrap();
             println!("{}", password);
         }
     } else if let Some(_matches) = matches.subcommand_matches("deck") {

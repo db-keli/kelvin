@@ -1,18 +1,22 @@
 use crate::admin;
-use crate::data::{encrypt_directory, decrypt_directory};
+use crate::data::{decrypt_directory, encrypt_directory};
 use admin::Admin;
+
 
 use rsa::{
     pkcs1::{self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey},
     Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::map::VacantEntry;
 use serde_json::to_string;
 
 use rsa::pkcs1::EncodeRsaPublicKey;
 use std::fs::File;
 
 use std::io::{self, prelude::*, Result};
+
+static VAULT_PATH: &str = "/etc/.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeckData {
@@ -56,7 +60,7 @@ impl DeckData {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = self.serialize_struct();
-        let filepath = format!("./.vault/{}.json", self.domain);
+        let filepath = format!("{}/{}.json",VAULT_PATH, self.domain);
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
@@ -65,7 +69,7 @@ impl DeckData {
     }
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let filepath = format!("./.vault/{}.json", self.domain);
+        let filepath = format!("{}/{}.json",VAULT_PATH, self.domain);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();

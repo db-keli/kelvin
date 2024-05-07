@@ -1,10 +1,16 @@
+/// src/admin.rs
+/// 
+/// 
+
 use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Result, Write};
 
-use crate::data::{encrypt_directory, decrypt_directory};
+use crate::data::{decrypt_directory, encrypt_directory};
+
+static VAULT_PATH: &str = "/etc/.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]
@@ -34,7 +40,7 @@ impl Admin {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = serde_json::to_string(&self)?;
-        let filepath = format!("./.vault/{}.json", self.username);
+        let filepath = format!("{}/{}.json",VAULT_PATH, self.username);
 
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
@@ -44,7 +50,7 @@ impl Admin {
     }
 
     pub fn read_data_from_json(&self) -> Result<Admin> {
-        let filepath = format!("./.vault/{}.json", self.username);
+        let filepath = format!("{}/{}.json",VAULT_PATH, self.username);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
@@ -52,7 +58,7 @@ impl Admin {
         file.flush()?;
 
         let admin_data: Admin = serde_json::from_str(&json_data)?;
-        
+
         Ok(admin_data)
     }
 
