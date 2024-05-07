@@ -4,6 +4,9 @@ use std::process::Command;
 use admin::Admin;
 use std::fs::{read_dir, read_to_string};
 
+static VAULT_PATH: &str = "/etc/.vault";
+
+
 pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
     if let Ok(entries) = read_dir(directory_path) {
         for entry in entries {
@@ -43,25 +46,34 @@ pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
     None
 }
 
-//function to encrypt the directory
+/// Encrypt the directory where encrypted password info lives
 pub fn encrypt_directory() -> std::io::Result<()> {
+    //! This function was specifically made to encrypt ./vault.tar.gz directory where encrypted data is stored
+    //! 
+    //! ## Usage
+    //! ```
+    //!     let _ = encrypt_directory()
+    //! ```
+    
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
-        .arg(".vault.tar.gz")
-        .arg(".vault")
+        .arg("/etc/.vault.tar.gz")
+        .arg(VAULT_PATH)
         .output()?;
 
     if output.status.success() {
         let s = String::from_utf8_lossy(&output.stdout);
         println!("{}", s);
-        let output2 = Command::new("gpg").args(["-c", ".vault.tar.gz"]).output()?;
+        let output2 = Command::new("gpg")
+            .args(["-c", "--no-use-agent", "/etc/.vault.tar.gz", "-y"])
+            .output()?;
         if !output.status.success() {
             let s = String::from_utf8_lossy(&output2.stderr);
             println!("Error: {}", s);
         } else {
             let _ = Command::new("rm")
-                .args(["-rf", ".vault", ".vault.tar.gz"])
+                .args(["-rf", "/etc/.vault", "/etc/.vault.tar.gz"])
                 .output()?;
         }
     } else {
@@ -71,22 +83,28 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     Ok(())
 }
 
-//function to the decrypt the directory
-
+/// Decrypts the directory where all the encrypted data is stored 
 pub fn decrypt_directory() -> std::io::Result<()> {
-    let output = Command::new("gpg").arg(".vault.tar.gz.gpg").output()?;
+    //! This function was specifically made to decrypt ./vault.tar.gz directory where encrypted data is stored
+    //! 
+    //! ## Usage
+    //! ```
+    //!     let _ = decrypt_directory()
+    //! ```
+
+    let output = Command::new("gpg").arg("/etc/.vault.tar.gz.gpg").output()?;
     if output.status.success() {
         let s = String::from_utf8_lossy(&output.stdout);
         println!("{}", s);
 
         let output2 = Command::new("tar")
-            .args(["-xf", ".vault.tar.gz"])
+            .args(["-xf", "/etc/.vault.tar.gz"])
             .output()?;
         if output2.status.success() {
             let s = String::from_utf8_lossy(&output2.stdout);
             println!("{}", s);
 
-            let _ = Command::new("rm").args(["-rf", ".vault.tar.gz"]).output()?;
+            let _ = Command::new("rm").args(["-rf", "/etc/.vault.tar.gz"]).output()?;
         } else {
             let s = String::from_utf8_lossy(&output.stderr);
             println!("{}", s);
