@@ -10,9 +10,8 @@ mod password;
 mod prompt;
 
 use password::generate_password;
-use prompt::{prompt_deck, prompt_logins, initialize_vault};
+use prompt::{initialize_vault, prompt_deck, prompt_logins};
 use std::process;
-
 
 fn main() {
     initialize_vault().unwrap();

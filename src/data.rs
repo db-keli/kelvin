@@ -6,7 +6,6 @@ use std::fs::{read_dir, read_to_string};
 
 static VAULT_PATH: &str = "/etc/.vault";
 
-
 pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
     if let Ok(entries) = read_dir(directory_path) {
         for entry in entries {
@@ -49,12 +48,12 @@ pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
 /// Encrypt the directory where encrypted password info lives
 pub fn encrypt_directory() -> std::io::Result<()> {
     //! This function was specifically made to encrypt ./vault.tar.gz directory where encrypted data is stored
-    //! 
+    //!
     //! ## Usage
     //! ```
     //!     let _ = encrypt_directory()
     //! ```
-    
+
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
@@ -83,10 +82,10 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     Ok(())
 }
 
-/// Decrypts the directory where all the encrypted data is stored 
+/// Decrypts the directory where all the encrypted data is stored
 pub fn decrypt_directory() -> std::io::Result<()> {
     //! This function was specifically made to decrypt ./vault.tar.gz directory where encrypted data is stored
-    //! 
+    //!
     //! ## Usage
     //! ```
     //!     let _ = decrypt_directory()
@@ -104,7 +103,9 @@ pub fn decrypt_directory() -> std::io::Result<()> {
             let s = String::from_utf8_lossy(&output2.stdout);
             println!("{}", s);
 
-            let _ = Command::new("rm").args(["-rf", "/etc/.vault.tar.gz"]).output()?;
+            let _ = Command::new("rm")
+                .args(["-rf", "/etc/.vault.tar.gz"])
+                .output()?;
         } else {
             let s = String::from_utf8_lossy(&output.stderr);
             println!("{}", s);

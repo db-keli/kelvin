@@ -1,6 +1,6 @@
 use rpassword;
-use std::io::{stdin, stdout, Result, Write};
 use std::fs;
+use std::io::{stdin, stdout, Result, Write};
 use std::path::Path;
 
 static VAULT_PATH: &str = "/etc/.vault";
@@ -47,7 +47,7 @@ pub fn prompt_logins() -> Result<(String, String)> {
 
 pub fn initialize_vault() -> Result<()> {
     let path = Path::new(VAULT_PATH);
-    if !path.exists(){
+    if !path.exists() {
         fs::create_dir(VAULT_PATH)?;
     }
     Ok(())
