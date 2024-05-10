@@ -7,7 +7,7 @@ use rsa::{
     Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::map::VacantEntry;
+
 use serde_json::to_string;
 
 use rsa::pkcs1::EncodeRsaPublicKey;
