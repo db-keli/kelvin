@@ -6,6 +6,6 @@ kelvin is a password manager like 1password but for the terminal. kelvin generat
 
 ### to do 
 - [ ] terminal user interface 
-- [ ] clipboard communication
+- [x] clipboard communication
 - [x] encrypt directory that saves encrypted password data with gnu gpg
 - [ ] handle multiple decks for same domain
