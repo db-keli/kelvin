@@ -11,3 +11,6 @@ kelvin is a password manager like 1password but for the terminal. kelvin generat
 - [x] encrypt directory that saves encrypted password data with gnu gpg
 - [ ] handle multiple decks for same domain
 - [ ] daemonize
+
+### contributing
+Welcoming contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for more details on how to contribute.
