@@ -19,7 +19,7 @@ pub fn prompt_deck() -> Result<(String, String)> {
         .read_line(&mut username)
         .expect("Failed to read line");
     username = username.trim().to_string();
-    print!("Enter password:");
+    print!("Enter the domain's password:");
     stdout().flush()?;
     let password = rpassword::read_password()?;
     print!("");
@@ -31,7 +31,7 @@ pub fn prompt_deck() -> Result<(String, String)> {
 pub fn prompt_logins() -> Result<(String, String)> {
     let _ = stdout().flush();
 
-    print!("Enter username:");
+    print!("Enter admin username:");
     stdout().flush()?;
 
     let mut username = String::new();
@@ -39,7 +39,7 @@ pub fn prompt_logins() -> Result<(String, String)> {
         .read_line(&mut username)
         .expect("Failed to read line");
     username = username.trim().to_string();
-    print!("Enter password:");
+    print!("Enter admin password:");
     stdout().flush()?;
     let password = rpassword::read_password()?;
     print!("");
