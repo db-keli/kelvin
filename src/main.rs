@@ -10,7 +10,7 @@ mod password;
 mod prompt;
 
 use password::generate_password;
-use prompt::{initialize_vault, prompt_deck, prompt_logins};
+use prompt::{initialize_vault, prompt_deck, prompt_logins, clip};
 use std::process;
 
 fn main() {
@@ -54,18 +54,11 @@ fn main() {
                 .parse::<usize>()
                 .unwrap();
             let password = generate_password(length);
-            process::Command::new("echo")
-                .args([&password, "|", "xclip", "-sel", "clip"])
-                .output()
-                .unwrap();
-            println!("{}", password);
+            clip(&password);
         } else {
             let password = generate_password(12);
-            process::Command::new("echo")
-                .args([&password, "|", "xclip", "-selection", "clipboard"])
-                .output()
-                .unwrap();
-            println!("{}", password);
+            clip(&password);
+            println!("Password copied to clipboard");
         }
     } else if let Some(_matches) = matches.subcommand_matches("deck") {
         let logins = prompt_logins().unwrap();
@@ -112,7 +105,8 @@ fn main() {
                 let deck = prompt_deck().unwrap();
                 let deck = Deck::new(&deck.0, &deck.1);
                 let data = deck.read_data_from_json().unwrap();
-                println!("Password: {:?}", String::from_utf8(data.decrypt()).unwrap());
+                let password = String::from_utf8(data.decrypt()).unwrap();
+                clip(&password);
             } else {
                 println!("You're unathorized");
             }

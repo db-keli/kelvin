@@ -4,7 +4,7 @@ use std::process::Command;
 use admin::Admin;
 use std::fs::{read_dir, read_to_string};
 
-static VAULT_PATH: &str = "/etc/.vault";
+static VAULT_PATH: &str = "./.vault";
 
 pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
     if let Ok(entries) = read_dir(directory_path) {
@@ -57,7 +57,7 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
-        .arg("/etc/.vault.tar.gz")
+        .arg("./.vault.tar.gz")
         .arg(VAULT_PATH)
         .output()?;
 
@@ -65,14 +65,14 @@ pub fn encrypt_directory() -> std::io::Result<()> {
         let s = String::from_utf8_lossy(&output.stdout);
         println!("{}", s);
         let output2 = Command::new("gpg")
-            .args(["-c", "--no-use-agent", "/etc/.vault.tar.gz", "-y"])
+            .args(["-c", "--no-use-agent", "./.vault.tar.gz"])
             .output()?;
         if !output.status.success() {
             let s = String::from_utf8_lossy(&output2.stderr);
             println!("Error: {}", s);
         } else {
             let _ = Command::new("rm")
-                .args(["-rf", "/etc/.vault", "/etc/.vault.tar.gz"])
+                .args(["-rf", "./.vault", "./.vault.tar.gz"])
                 .output()?;
         }
     } else {
@@ -91,20 +91,20 @@ pub fn decrypt_directory() -> std::io::Result<()> {
     //!     let _ = decrypt_directory()
     //! ```
 
-    let output = Command::new("gpg").arg("/etc/.vault.tar.gz.gpg").output()?;
+    let output = Command::new("gpg").arg("./.vault.tar.gz.gpg").output()?;
     if output.status.success() {
         let s = String::from_utf8_lossy(&output.stdout);
         println!("{}", s);
 
         let output2 = Command::new("tar")
-            .args(["-xf", "/etc/.vault.tar.gz"])
+            .args(["-xf", "./.vault.tar.gz"])
             .output()?;
         if output2.status.success() {
             let s = String::from_utf8_lossy(&output2.stdout);
             println!("{}", s);
 
             let _ = Command::new("rm")
-                .args(["-rf", "/etc/.vault.tar.gz"])
+                .args(["-rf", "./.vault.tar.gz"])
                 .output()?;
         } else {
             let s = String::from_utf8_lossy(&output.stderr);

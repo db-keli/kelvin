@@ -15,7 +15,7 @@ use std::fs::File;
 
 use std::io::{self, prelude::*, Result};
 
-static VAULT_PATH: &str = "/etc/.vault";
+static VAULT_PATH: &str = "./.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeckData {

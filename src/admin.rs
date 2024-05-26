@@ -9,7 +9,7 @@ use std::io::{Read, Result, Write};
 
 use crate::data::{decrypt_directory, encrypt_directory};
 
-static VAULT_PATH: &str = "/etc/.vault";
+static VAULT_PATH: &str = "./.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]
@@ -44,7 +44,7 @@ impl Admin {
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
-        let _ = encrypt_directory()?;
+        encrypt_directory().unwrap();
         Ok(())
     }
 

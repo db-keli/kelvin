@@ -6,7 +6,7 @@ use clipboard::{ClipboardContext, ClipboardProvider};
 use std::thread;
 use std::time::Duration;
 
-static VAULT_PATH: &str = "/etc/.vault";
+static VAULT_PATH: &str = "./.vault";
 
 pub fn prompt_deck() -> Result<(String, String)> {
     let _ = stdout().flush();
@@ -60,8 +60,6 @@ pub fn clip(text: &str) -> (){
     let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
 
     ctx.set_contents(text.to_owned()).unwrap();
-
-    println!("Password copied to clipboard");
-    println!("You have 30 seconds to paste it");
-    thread::sleep(Duration::from_secs(30));
+    thread::sleep(Duration::from_secs(2));
+    return;
 }

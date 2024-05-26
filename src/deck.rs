@@ -6,7 +6,7 @@ use std::io::{Error, ErrorKind, Read, Result, Write};
 
 use crate::data::{decrypt_directory, encrypt_directory};
 use crate::deckdata::DeckData;
-static VAULT_PATH: &str = "/etc/.vault";
+static VAULT_PATH: &str = "./.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
