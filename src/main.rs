@@ -1,3 +1,4 @@
+#![allow(unused)]
 mod admin;
 mod data;
 mod deck;
