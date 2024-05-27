@@ -1,5 +1,6 @@
 use crate::{admin, deckdata};
 use std::process::Command;
+use std::path::Path;
 
 use admin::Admin;
 use std::fs::{read_dir, read_to_string};
@@ -60,6 +61,13 @@ pub fn encrypt_directory() -> std::io::Result<()> {
         .arg("./.vault.tar.gz")
         .arg(VAULT_PATH)
         .output()?;
+
+    let file_path = "./.vault.tar.gz.gpg";
+    // Check if the file exists and delete it to avoid prompt
+    if Path::new(file_path).exists() {
+        std::fs::remove_file(file_path)?;
+    }
+
 
     if output.status.success() {
         let output2 = Command::new("gpg")
