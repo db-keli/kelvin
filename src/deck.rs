@@ -54,7 +54,6 @@ impl Deck {
         file.flush()?;
         let _ = encrypt_directory();
 
-        println!("{}", json_data);
         let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
 
         let deck_data = deck_data_vec

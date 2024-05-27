@@ -11,7 +11,7 @@ mod password;
 mod prompt;
 
 use password::generate_password;
-use prompt::{initialize_vault, prompt_deck, prompt_logins, clip};
+use prompt::{clip, initialize_vault, prompt_deck, prompt_logins};
 use std::process;
 
 fn main() {
@@ -108,6 +108,7 @@ fn main() {
                 let data = deck.read_data_from_json().unwrap();
                 let password = String::from_utf8(data.decrypt()).unwrap();
                 clip(&password);
+                println!("Password copied to clipboard");
             } else {
                 println!("You're unathorized");
             }

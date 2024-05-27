@@ -1,8 +1,8 @@
+use clipboard::{ClipboardContext, ClipboardProvider};
 use rpassword;
 use std::fs;
 use std::io::{stdin, stdout, Result, Write};
 use std::path::Path;
-use clipboard::{ClipboardContext, ClipboardProvider};
 use std::thread;
 use std::time::Duration;
 
@@ -56,7 +56,7 @@ pub fn initialize_vault() -> Result<()> {
     Ok(())
 }
 
-pub fn clip(text: &str) -> (){
+pub fn clip(text: &str) -> () {
     let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
 
     ctx.set_contents(text.to_owned()).unwrap();

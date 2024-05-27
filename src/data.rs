@@ -62,8 +62,6 @@ pub fn encrypt_directory() -> std::io::Result<()> {
         .output()?;
 
     if output.status.success() {
-        let s = String::from_utf8_lossy(&output.stdout);
-        println!("{}", s);
         let output2 = Command::new("gpg")
             .args(["-c", "--no-use-agent", "./.vault.tar.gz"])
             .output()?;
@@ -93,16 +91,10 @@ pub fn decrypt_directory() -> std::io::Result<()> {
 
     let output = Command::new("gpg").arg("./.vault.tar.gz.gpg").output()?;
     if output.status.success() {
-        let s = String::from_utf8_lossy(&output.stdout);
-        println!("{}", s);
-
         let output2 = Command::new("tar")
             .args(["-xf", "./.vault.tar.gz"])
             .output()?;
         if output2.status.success() {
-            let s = String::from_utf8_lossy(&output2.stdout);
-            println!("{}", s);
-
             let _ = Command::new("rm")
                 .args(["-rf", "./.vault.tar.gz"])
                 .output()?;
