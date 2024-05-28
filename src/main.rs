@@ -12,7 +12,7 @@ mod prompt;
 
 use password::generate_password;
 use prompt::{clip, initialize_vault, prompt_deck, prompt_logins, prompt_deck_open_sesame};
-use std::process;
+use std::{process, env};
 
 fn main() {
     initialize_vault().unwrap();
@@ -116,4 +116,5 @@ fn main() {
     } else if let Some(_matches) = matches.subcommand_matches("reset") {
         status = Some(true);
     }
+    env::set_var("RUST_BACKTRACE", "1");
 }

@@ -5,8 +5,9 @@ use std::io::{stdin, stdout, Result, Write};
 use std::path::Path;
 use std::thread;
 use std::time::Duration;
+use std::process::Command;
 
-static VAULT_PATH: &str = "./.vault";
+static VAULT_PATH: &str = ".vault";
 
 pub fn prompt_deck() -> Result<(String, String)> {
     let _ = stdout().flush();
@@ -65,9 +66,10 @@ pub fn prompt_logins() -> Result<(String, String)> {
 }
 
 pub fn initialize_vault() -> Result<()> {
-    let path = Path::new(VAULT_PATH);
+    let vault = format!("/home/{}/{}", get_username(), VAULT_PATH);
+    let path = Path::new(vault.as_str());
     if !path.exists() {
-        fs::create_dir(VAULT_PATH)?;
+        fs::create_dir(vault)?;
     }
     Ok(())
 }
@@ -78,4 +80,12 @@ pub fn clip(text: &str) -> () {
     ctx.set_contents(text.to_owned()).unwrap();
     thread::sleep(Duration::from_secs(2));
     return;
+}
+
+pub fn get_username() -> String {
+    let output = Command::new("whoami")
+        .output()
+        .expect("failed to execute process");
+    let username = String::from_utf8(output.stdout).unwrap();
+    return username
 }

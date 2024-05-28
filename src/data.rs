@@ -1,11 +1,12 @@
-use crate::{admin, deckdata};
+use crate::{admin, deckdata, prompt};
 use std::process::Command;
 use std::path::Path;
 
+use prompt::get_username;
 use admin::Admin;
 use std::fs::{read_dir, read_to_string};
 
-static VAULT_PATH: &str = "./.vault";
+static VAULT_PATH: &str = ".vault";
 
 pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
     if let Ok(entries) = read_dir(directory_path) {
@@ -37,7 +38,7 @@ pub fn read_user_data(username: &str, directory_path: &str) -> Option<Admin> {
 }
 
 pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
-    let file_path = format!("{}/{}.json", VAULT_PATH,domain);
+    let file_path = format!("/home/{}/{}/{}.json",get_username(),VAULT_PATH,domain);
     if let Ok(file_content) = read_to_string(file_path) {
         if let Ok(deck_data) = serde_json::from_str(&file_content) {
             return Some(deck_data);
@@ -58,11 +59,11 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
-        .arg(format!("{}.tar.gz", VAULT_PATH).as_str())
+        .arg(format!("/home/{}/{}.tar.gz",get_username(), VAULT_PATH).as_str())
         .arg(VAULT_PATH)
         .output()?;
 
-    let file_path = format!("{}.tar.gz.gpg", VAULT_PATH);
+    let file_path = format!("/home/{}/{}.tar.gz.gpg",get_username(), VAULT_PATH);
     // Check if the file exists and delete it to avoid prompt
     if Path::new(file_path.as_str()).exists() {
         std::fs::remove_file(file_path)?;
@@ -71,14 +72,14 @@ pub fn encrypt_directory() -> std::io::Result<()> {
 
     if output.status.success() {
         let output2 = Command::new("gpg")
-            .args(["-c", "--no-use-agent", format!("{}.tar.gz", VAULT_PATH).as_str()])
+            .args(["-c", "--no-use-agent", format!("/home/{}/{}.tar.gz", get_username(), VAULT_PATH).as_str()])
             .output()?;
         if !output.status.success() {
             let s = String::from_utf8_lossy(&output2.stderr);
             println!("Error: {}", s);
         } else {
             let _ = Command::new("rm")
-                .args(["-rf", VAULT_PATH, format!("{}.tar.gz", VAULT_PATH).as_str()])
+                .args(["-rf", format!("/home/{}/{}",get_username(), VAULT_PATH).as_str(), format!("/home/{}/{}.tar.gz",get_username(), VAULT_PATH).as_str()])
                 .output()?;
         }
     } else {
@@ -97,14 +98,14 @@ pub fn decrypt_directory() -> std::io::Result<()> {
     //!     let _ = decrypt_directory()
     //! ```
 
-    let output = Command::new("gpg").arg(format!("{}.tar.gz.gpg", VAULT_PATH).as_str()).output()?;
+    let output = Command::new("gpg").arg(format!("home/{}/{}.tar.gz.gpg",get_username(), VAULT_PATH).as_str()).output()?;
     if output.status.success() {
         let output2 = Command::new("tar")
-            .args(["-xf", format!("{}.tar.gz", VAULT_PATH).as_str()])
+            .args(["-xf", format!("/home/{}/{}.tar.gz",get_username(), VAULT_PATH).as_str()])
             .output()?;
         if output2.status.success() {
             let _ = Command::new("rm")
-                .args(["-rf", format!("{}.tar.gz", VAULT_PATH).as_str()])
+                .args(["-rf", format!("/home/{}/{}.tar.gz",get_username(), VAULT_PATH).as_str()])
                 .output()?;
         } else {
             let s = String::from_utf8_lossy(&output.stderr);
