@@ -37,7 +37,7 @@ pub fn read_user_data(username: &str, directory_path: &str) -> Option<Admin> {
 }
 
 pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
-    let file_path = format!("./.vault/{}.json", domain);
+    let file_path = format!("{}/{}.json", VAULT_PATH,domain);
     if let Ok(file_content) = read_to_string(file_path) {
         if let Ok(deck_data) = serde_json::from_str(&file_content) {
             return Some(deck_data);
@@ -58,27 +58,27 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
-        .arg("./.vault.tar.gz")
+        .arg(format!("{}.tar.gz", VAULT_PATH).as_str())
         .arg(VAULT_PATH)
         .output()?;
 
-    let file_path = "./.vault.tar.gz.gpg";
+    let file_path = format!("{}.tar.gz.gpg", VAULT_PATH);
     // Check if the file exists and delete it to avoid prompt
-    if Path::new(file_path).exists() {
+    if Path::new(file_path.as_str()).exists() {
         std::fs::remove_file(file_path)?;
     }
 
 
     if output.status.success() {
         let output2 = Command::new("gpg")
-            .args(["-c", "--no-use-agent", "./.vault.tar.gz"])
+            .args(["-c", "--no-use-agent", format!("{}.tar.gz", VAULT_PATH).as_str()])
             .output()?;
         if !output.status.success() {
             let s = String::from_utf8_lossy(&output2.stderr);
             println!("Error: {}", s);
         } else {
             let _ = Command::new("rm")
-                .args(["-rf", "./.vault", "./.vault.tar.gz"])
+                .args(["-rf", VAULT_PATH, format!("{}.tar.gz", VAULT_PATH).as_str()])
                 .output()?;
         }
     } else {
@@ -97,14 +97,14 @@ pub fn decrypt_directory() -> std::io::Result<()> {
     //!     let _ = decrypt_directory()
     //! ```
 
-    let output = Command::new("gpg").arg("./.vault.tar.gz.gpg").output()?;
+    let output = Command::new("gpg").arg(format!("{}.tar.gz.gpg", VAULT_PATH).as_str()).output()?;
     if output.status.success() {
         let output2 = Command::new("tar")
-            .args(["-xf", "./.vault.tar.gz"])
+            .args(["-xf", format!("{}.tar.gz", VAULT_PATH).as_str()])
             .output()?;
         if output2.status.success() {
             let _ = Command::new("rm")
-                .args(["-rf", "./.vault.tar.gz"])
+                .args(["-rf", format!("{}.tar.gz", VAULT_PATH).as_str()])
                 .output()?;
         } else {
             let s = String::from_utf8_lossy(&output.stderr);

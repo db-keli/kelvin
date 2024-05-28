@@ -11,7 +11,7 @@ mod password;
 mod prompt;
 
 use password::generate_password;
-use prompt::{clip, initialize_vault, prompt_deck, prompt_logins};
+use prompt::{clip, initialize_vault, prompt_deck, prompt_logins, prompt_deck_open_sesame};
 use std::process;
 
 fn main() {
@@ -103,8 +103,8 @@ fn main() {
             let status = status.unwrap();
             if status.prompt_auth(username, password).unwrap() {
                 println!("Fill details to get password from the Vault.");
-                let deck = prompt_deck().unwrap();
-                let deck = Deck::new(&deck.0, &deck.1);
+                let deck = prompt_deck_open_sesame().unwrap();
+                let deck = Deck::new(&deck, "");
                 let data = deck.read_data_from_json().unwrap();
                 let password = String::from_utf8(data.decrypt()).unwrap();
                 clip(&password);
