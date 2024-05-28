@@ -43,7 +43,6 @@ pub fn prompt_deck_open_sesame() -> Result<String> {
     Ok(username)
 }
 
-
 pub fn prompt_logins() -> Result<(String, String)> {
     let _ = stdout().flush();
 

@@ -1,6 +1,6 @@
 use crate::{admin, deckdata};
-use std::process::Command;
 use std::path::Path;
+use std::process::Command;
 
 use admin::Admin;
 use std::fs::{read_dir, read_to_string};
@@ -37,7 +37,7 @@ pub fn read_user_data(username: &str, directory_path: &str) -> Option<Admin> {
 }
 
 pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
-    let file_path = format!("{}/{}.json", VAULT_PATH,domain);
+    let file_path = format!("{}/{}.json", VAULT_PATH, domain);
     if let Ok(file_content) = read_to_string(file_path) {
         if let Ok(deck_data) = serde_json::from_str(&file_content) {
             return Some(deck_data);
@@ -68,10 +68,13 @@ pub fn encrypt_directory() -> std::io::Result<()> {
         std::fs::remove_file(file_path)?;
     }
 
-
     if output.status.success() {
         let output2 = Command::new("gpg")
-            .args(["-c", "--no-use-agent", format!("{}.tar.gz", VAULT_PATH).as_str()])
+            .args([
+                "-c",
+                "--no-use-agent",
+                format!("{}.tar.gz", VAULT_PATH).as_str(),
+            ])
             .output()?;
         if !output.status.success() {
             let s = String::from_utf8_lossy(&output2.stderr);
@@ -97,7 +100,9 @@ pub fn decrypt_directory() -> std::io::Result<()> {
     //!     let _ = decrypt_directory()
     //! ```
 
-    let output = Command::new("gpg").arg(format!("{}.tar.gz.gpg", VAULT_PATH).as_str()).output()?;
+    let output = Command::new("gpg")
+        .arg(format!("{}.tar.gz.gpg", VAULT_PATH).as_str())
+        .output()?;
     if output.status.success() {
         let output2 = Command::new("tar")
             .args(["-xf", format!("{}.tar.gz", VAULT_PATH).as_str()])

@@ -11,7 +11,7 @@ mod password;
 mod prompt;
 
 use password::generate_password;
-use prompt::{clip, initialize_vault, prompt_deck, prompt_logins, prompt_deck_open_sesame};
+use prompt::{clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_logins};
 use std::process;
 
 fn main() {
