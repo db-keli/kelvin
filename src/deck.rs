@@ -6,8 +6,7 @@ use std::io::{Error, ErrorKind, Read, Result, Write};
 
 use crate::data::{decrypt_directory, encrypt_directory};
 use crate::deckdata::DeckData;
-use crate::prompt::get_username;
-static VAULT_PATH: &str = ".vault";
+use crate::prompt::vault_path;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
@@ -47,7 +46,7 @@ impl Deck {
 
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let filepath = format!("/home/{}/{}/{}.json",get_username(), VAULT_PATH, self.domain);
+        let filepath = format!("{}/{}.json",vault_path(), self.domain);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();

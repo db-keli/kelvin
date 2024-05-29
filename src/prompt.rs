@@ -1,11 +1,11 @@
 use clipboard::{ClipboardContext, ClipboardProvider};
 use rpassword;
+use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Result, Write};
 use std::path::Path;
 use std::thread;
 use std::time::Duration;
-use std::process::Command;
 
 static VAULT_PATH: &str = ".vault";
 
@@ -44,7 +44,6 @@ pub fn prompt_deck_open_sesame() -> Result<String> {
     Ok(username)
 }
 
-
 pub fn prompt_logins() -> Result<(String, String)> {
     let _ = stdout().flush();
 
@@ -66,7 +65,7 @@ pub fn prompt_logins() -> Result<(String, String)> {
 }
 
 pub fn initialize_vault() -> Result<()> {
-    let vault = format!("/home/{}/{}", get_username(), VAULT_PATH);
+    let vault = vault_path(); 
     let path = Path::new(vault.as_str());
     if !path.exists() {
         fs::create_dir(vault)?;
@@ -82,10 +81,15 @@ pub fn clip(text: &str) -> () {
     return;
 }
 
-pub fn get_username() -> String {
-    let output = Command::new("whoami")
-        .output()
-        .expect("failed to execute process");
-    let username = String::from_utf8(output.stdout).unwrap();
-    return username
+#[allow(deprecated)]
+pub fn vault_path() -> String {
+    let home = env::home_dir()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string()
+        .trim()
+        .to_string();
+
+    format!("{}/{}", home, VAULT_PATH)
 }
