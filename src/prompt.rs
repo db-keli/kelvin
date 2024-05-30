@@ -4,6 +4,7 @@ use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Result, Write};
 use std::path::Path;
+use std::path::PathBuf;
 use std::thread;
 use std::time::Duration;
 
@@ -83,13 +84,16 @@ pub fn clip(text: &str) -> () {
 
 #[allow(deprecated)]
 pub fn vault_path() -> String {
-    let home = env::home_dir()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_string()
-        .trim()
-        .to_string();
+    // let home = env::home_dir()
+    //     .unwrap()
+    //     .to_str()
+    //     .unwrap()
+    //     .to_string()
+    //     .trim()
+    //     .to_string();
 
-    format!("{}/{}", home, VAULT_PATH)
+    let home_dir = env::var("HOME").expect("Unable to get home directory");
+    let vault = PathBuf::from(home_dir).join(VAULT_PATH);
+
+    return vault.to_str().unwrap().to_string();
 }

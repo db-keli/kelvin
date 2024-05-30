@@ -37,6 +37,14 @@ impl Admin {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = serde_json::to_string(&self)?;
+        
+        let home_dir = std::env::var("HOME").expect("Unable to get home directory");
+        let vault_path_temp = std::path::PathBuf::from(home_dir).join(".vault");
+
+        if !vault_path_temp.exists() {
+            std::fs::create_dir_all(&vault_path_temp)?;
+        }
+
         let filepath = format!("{}/{}.json",vault_path(), self.username);
 
         let mut file = File::create(filepath)?;

@@ -99,7 +99,7 @@ pub fn decrypt_directory() -> std::io::Result<()> {
     let output = Command::new("gpg").arg(format!("{}.tar.gz.gpg",vault_path()).as_str()).output()?;
     if output.status.success() {
         let output2 = Command::new("tar")
-            .args(["-xf", format!("{}.tar.gz",vault_path()).as_str()])
+            .args(["-xzvf", ".vault" ,format!("{}.tar.gz",vault_path()).as_str()])
             .output()?;
         if output2.status.success() {
             let _ = Command::new("rm")
