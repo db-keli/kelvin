@@ -1,0 +1,11 @@
+{
+    "editor.fontFamily": "Geist Mono",
+    "files.autoSave": "onFocusChange",
+    "editor.lineNumbers": "relative",
+    "editor.cursorStyle": "underline",
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.minimap.scale": 3,
+    "editor.minimap.autohide": true,
+    "editor.minimap.renderCharacters": false,
+    "editor.fontSize": 14
+}
