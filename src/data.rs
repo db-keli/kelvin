@@ -12,9 +12,7 @@ pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
         for entry in entries {
             if let Ok(entry) = entry {
                 if let Some(filename) = entry.file_name().to_str() {
-                    if filename == username {
-                        return true;
-                    }
+                   return filename == username;
                 }
             }
         }
