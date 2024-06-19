@@ -20,9 +20,9 @@ pub struct Admin {
 
 #[warn(dead_code)]
 impl Admin {
-    pub fn new(name: &str, pass: &str) -> Admin {
+    pub fn new(name: &str, password: &str) -> Admin {
         let username = name.to_string();
-        let password = pass.to_string();
+        let password = password.to_string();
 
         Admin { username, password }
     }
