@@ -50,10 +50,9 @@ pub fn prompt_logins() -> Result<(String, String)> {
     stdout().flush()?;
 
     let mut username = String::new();
-    stdin()
-        .read_line(&mut username)
-        .expect("Failed to read line");
+    stdin().read_line(&mut username).expect("Failed to read line");
     username = username.trim().to_string();
+    
     print!("Enter admin password:");
     stdout().flush()?;
     let password = rpassword::read_password()?;

@@ -1,17 +1,14 @@
 #![allow(unused)]
-mod admin;
-mod data;
-mod deck;
-mod deckdata;
-use admin::Admin;
-use clap::{Arg, Command};
-use deck::Deck;
-use deckdata::DeckData;
-mod password;
-mod prompt;
+use kelvin::{
+    admin::Admin, 
+    deck::Deck,
+    deckdata::DeckData,
+    password::generate_password,
+    prompt::{clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_logins},
+    data,
+};
 
-use password::generate_password;
-use prompt::{clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_logins};
+use clap::{Arg, Command};
 use std::process;
 
 fn main() {
@@ -38,14 +35,13 @@ fn main() {
         .get_matches();
 
     let mut status: Option<bool> = None;
-    let _admin: Option<Admin> = None;
+    let admin: Option<Admin> = None;
 
-    if let Some(_matches) = matches.subcommand_matches("create-admin") {
-        let logins = prompt_logins().unwrap();
-        let admin_password = logins.1;
-        let mut admin = Admin::new(&logins.0, &admin_password);
+    if let Some(matches) = matches.subcommand_matches("create-admin") {
+        let admin_credentials = prompt_logins().expect("Failed to get admin credentials");
+        let mut admin = Admin::new(&admin_credentials.0, &admin_credentials.1);
         admin.hash_password();
-        admin.save_to_json().unwrap();
+        admin.save_to_json().expect("Failed to save admin to JSON");
         status = Some(true);
     } else if let Some(matches) = matches.subcommand_matches("generate") {
         if matches.contains_id("length") {
@@ -61,59 +57,59 @@ fn main() {
             clip(&password);
             println!("Password copied to clipboard");
         }
-    } else if let Some(_matches) = matches.subcommand_matches("deck") {
-        let logins = prompt_logins().unwrap();
-        let username = logins.0.trim().to_string();
-        let password = logins.1.trim().to_string();
-        let admin_logins = Admin::new(&username, &password);
-        let status = admin_logins.read_data_from_json();
-        if let Err(err) = &status {
-            print!("You're not an admin\n{}\n", err);
-        } else {
-            let status = status.unwrap();
-            if status.prompt_auth(username, password).unwrap() {
-                println!("Add a deck to the Vault.");
-                let deck_data = prompt_deck().unwrap();
-                let deck = Deck::new(&deck_data.0, &deck_data.1);
-                let encrypted_data = deck.encrypt();
-                let deck_data = DeckData::new(
-                    status,
-                    deck.domain,
-                    encrypted_data.0,
-                    encrypted_data.1 .1,
-                    encrypted_data.1 .0,
-                );
-                deck_data.save_to_json().unwrap();
-            } else {
-                println!("You're unathorized");
+    } else if let Some(matches) = matches.subcommand_matches("deck") {
+        let (admin_username, admin_password) = prompt_logins().expect("Failed to get admin credentials");
+        let admin = Admin::new(&admin_username, &admin_password);
+        let status = admin.read_data_from_json();
+        match status {
+            Err(err) => {
+                print!("You're not an admin\n{}\n", err);
+            }
+            Ok(admin) => {
+                if admin.prompt_auth(admin_username, admin_password).unwrap() {
+                    println!("Add a deck to the Vault.");
+                    let deck_data = prompt_deck().unwrap();
+                    let deck = Deck::new(&deck_data.0, &deck_data.1);
+                    let encrypted_data = deck.encrypt();
+                    let deck_data = DeckData::new(
+                        admin,
+                        deck.domain,
+                        encrypted_data.0,
+                        encrypted_data.1 .1,
+                        encrypted_data.1 .0,
+                    );
+                    deck_data.save_to_json().unwrap();
+                } else {
+                    println!("You're unauthorized");
+                }
             }
         }
-    } else if let Some(_matches) = matches.subcommand_matches("open-sesame") {
-        let logins = prompt_logins().unwrap();
-        let username = logins.0.trim().to_string();
-        let password = logins.1.trim().to_string();
-        let admin_logins = Admin::new(&username, &password);
-        let status = admin_logins.read_data_from_json();
-        if let Err(err) = &status {
-            let err = err.to_string();
-            if err.contains("No such file") {
-                print!("You're not an admin\n");
+    } else if let Some(matches) = matches.subcommand_matches("open-sesame") {
+        let (admin_username, admin_password) = prompt_logins().expect("Failed to get admin credentials");
+        let admin = Admin::new(&admin_username, &admin_password);
+        let status = admin.read_data_from_json();
+        match status {
+            Err(err) => {
+                let err_msg = err.to_string();
+                if err_msg.contains("No such file") {
+                    print!("You're not an admin\n");
+                }
             }
-        } else {
-            let status = status.unwrap();
-            if status.prompt_auth(username, password).unwrap() {
-                println!("Fill details to get password from the Vault.");
-                let deck = prompt_deck_open_sesame().unwrap();
-                let deck = Deck::new(&deck, "");
-                let data = deck.read_data_from_json().unwrap();
-                let password = String::from_utf8(data.decrypt()).unwrap();
-                clip(&password);
-                println!("Password copied to clipboard");
-            } else {
-                println!("You're unathorized");
+            Ok(admin) => {
+                if admin.prompt_auth(admin_username, admin_password).unwrap() {
+                    println!("Fill details to get password from the Vault.");
+                    let deck = prompt_deck_open_sesame().unwrap();
+                    let deck = Deck::new(&deck, "");
+                    let data = deck.read_data_from_json().unwrap();
+                    let password = String::from_utf8(data.decrypt()).unwrap();
+                    clip(&password);
+                    println!("Password copied to clipboard");
+                } else {
+                    println!("You're unauthorized");
+                }
             }
         }
-    } else if let Some(_matches) = matches.subcommand_matches("reset") {
+    } else if let Some(matches) = matches.subcommand_matches("reset") {
         status = Some(true);
     }
 }
