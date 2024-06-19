@@ -1,21 +1,16 @@
-use crate::admin;
-use crate::data::{decrypt_directory, encrypt_directory};
-use admin::Admin;
-
+use crate::{
+    admin::{Admin, VAULT_PATH},
+    data::{decrypt_directory, encrypt_directory},
+};
 use rsa::{
-    pkcs1::{self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey},
+    pkcs1::{self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey, EncodeRsaPublicKey},
     Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
 };
+
 use serde::{Deserialize, Serialize};
-
 use serde_json::to_string;
-
-use rsa::pkcs1::EncodeRsaPublicKey;
 use std::fs::File;
-
 use std::io::{self, prelude::*, Result};
-
-static VAULT_PATH: &str = "./.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeckData {

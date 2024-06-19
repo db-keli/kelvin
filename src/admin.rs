@@ -9,7 +9,7 @@ use std::io::{Read, Result, Write};
 
 use crate::data::{decrypt_directory, encrypt_directory};
 
-static VAULT_PATH: &str = "./.vault";
+pub static VAULT_PATH: &str = "./.vault";
 
 #[derive(Serialize, Deserialize, Debug)]
 #[warn(dead_code)]

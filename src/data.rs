@@ -1,11 +1,11 @@
-use crate::{admin, deckdata};
 use std::path::Path;
 use std::process::Command;
-
-use admin::Admin;
 use std::fs::{read_dir, read_to_string};
 
-static VAULT_PATH: &str = "./.vault";
+use crate::{
+    admin::{Admin, VAULT_PATH},
+    deckdata,
+};
 
 pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
     if let Ok(entries) = read_dir(directory_path) {

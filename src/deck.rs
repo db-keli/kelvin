@@ -4,9 +4,11 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Result, Write};
 
-use crate::data::{decrypt_directory, encrypt_directory};
-use crate::deckdata::DeckData;
-static VAULT_PATH: &str = "./.vault";
+use crate::{
+    admin::VAULT_PATH,
+    deckdata::DeckData,
+    data::{decrypt_directory, encrypt_directory},
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
