@@ -5,8 +5,7 @@ use std::io::{stdin, stdout, Result, Write};
 use std::path::Path;
 use std::thread;
 use std::time::Duration;
-
-static VAULT_PATH: &str = "./.vault";
+use crate::admin::VAULT_PATH;
 
 pub fn prompt_deck() -> Result<(String, String)> {
     let _ = stdout().flush();
