@@ -1,17 +1,14 @@
 #![allow(unused)]
-mod admin;
-mod data;
-mod deck;
-mod deckdata;
-use admin::Admin;
-use clap::{Arg, Command};
-use deck::Deck;
-use deckdata::DeckData;
-mod password;
-mod prompt;
+use kelvin::{
+    admin::Admin, 
+    deck::Deck,
+    deckdata::DeckData,
+    password::generate_password,
+    prompt::{clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_logins},
+    data,
+};
 
-use password::generate_password;
-use prompt::{clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_logins};
+use clap::{Arg, Command};
 use std::process;
 
 fn main() {
