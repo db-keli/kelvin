@@ -1,6 +1,6 @@
+use std::fs::{read_dir, read_to_string};
 use std::path::Path;
 use std::process::Command;
-use std::fs::{read_dir, read_to_string};
 
 use crate::{
     admin::{Admin, VAULT_PATH},
@@ -12,7 +12,7 @@ pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
         for entry in entries {
             if let Ok(entry) = entry {
                 if let Some(filename) = entry.file_name().to_str() {
-                   return filename == username;
+                    return filename == username;
                 }
             }
         }
@@ -118,5 +118,20 @@ pub fn decrypt_directory() -> std::io::Result<()> {
         println!("{}", s);
     }
 
+    Ok(())
+}
+
+pub fn remove_vault() -> std::io::Result<()> {
+    let output = Command::new("sudo")
+        .args([
+            "rm",
+            "-rf",
+            VAULT_PATH,
+            format!("{}.tar.gz.gpg", VAULT_PATH).as_str(),
+        ])
+        .output()?;
+    if output.status.success() {
+        println!("Vault reseted successfully");
+    }
     Ok(())
 }

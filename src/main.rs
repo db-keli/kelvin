@@ -1,11 +1,11 @@
 #![allow(unused)]
 use kelvin::{
-    admin::Admin, 
+    admin::{self, Admin},
+    data::{encrypt_directory, remove_vault},
     deck::Deck,
     deckdata::DeckData,
     password::generate_password,
     prompt::{clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_logins},
-    data,
 };
 
 use clap::{Arg, Command};
@@ -58,7 +58,8 @@ fn main() {
             println!("Password copied to clipboard");
         }
     } else if let Some(matches) = matches.subcommand_matches("deck") {
-        let (admin_username, admin_password) = prompt_logins().expect("Failed to get admin credentials");
+        let (admin_username, admin_password) =
+            prompt_logins().expect("Failed to get admin credentials");
         let admin = Admin::new(&admin_username, &admin_password);
         let status = admin.read_data_from_json();
         match status {
@@ -85,7 +86,8 @@ fn main() {
             }
         }
     } else if let Some(matches) = matches.subcommand_matches("open-sesame") {
-        let (admin_username, admin_password) = prompt_logins().expect("Failed to get admin credentials");
+        let (admin_username, admin_password) =
+            prompt_logins().expect("Failed to get admin credentials");
         let admin = Admin::new(&admin_username, &admin_password);
         let status = admin.read_data_from_json();
         match status {
@@ -110,6 +112,24 @@ fn main() {
             }
         }
     } else if let Some(matches) = matches.subcommand_matches("reset") {
-        status = Some(true);
+        let (admin_username, admin_password) =
+            prompt_logins().expect("Failed to get admin credentials");
+        let admin = Admin::new(&admin_username, &admin_password);
+        let status = admin.read_data_from_json();
+        match status {
+            Err(err) => {
+                let err_msg = err.to_string();
+                if err_msg.contains("No such file") {
+                    print!("You're not an admin\n");
+                }
+            }
+            Ok(admin) => {
+                if admin.prompt_auth(admin_username, admin_password).unwrap() {
+                    let _ = remove_vault().unwrap();
+                } else {
+                    println!("You're unauthorized");
+                }
+            }
+        }
     }
 }
