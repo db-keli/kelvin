@@ -44,15 +44,13 @@ pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
     None
 }
 
-/// Encrypt the directory where encrypted password info lives
+/// This function was specifically made to encrypt ./vault.tar.gz directory where encrypted data is stored
+///
+/// ## Usage
+///
+/// let _ = encrypt_directory();
+///
 pub fn encrypt_directory() -> std::io::Result<()> {
-    //! This function was specifically made to encrypt ./vault.tar.gz directory where encrypted data is stored
-    //!
-    //! ## Usage
-    //! ```
-    //!     let _ = encrypt_directory()
-    //! ```
-
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
@@ -89,15 +87,13 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     Ok(())
 }
 
-/// Decrypts the directory where all the encrypted data is stored
+/// This function was specifically made to decrypt ./vault.tar.gz directory where encrypted data is stored
+///
+/// ## Usage
+///
+/// let _ = decrypt_directory()
+///
 pub fn decrypt_directory() -> std::io::Result<()> {
-    //! This function was specifically made to decrypt ./vault.tar.gz directory where encrypted data is stored
-    //!
-    //! ## Usage
-    //! ```
-    //!     let _ = decrypt_directory()
-    //! ```
-
     let output = Command::new("gpg")
         .arg(format!("{}.tar.gz.gpg", VAULT_PATH).as_str())
         .output()?;
