@@ -1,3 +1,5 @@
+use crate::data::{decrypt_directory, encrypt_directory};
+use crate::prompt::vault_path;
 /// src/admin.rs
 ///
 ///
@@ -6,8 +8,6 @@ use bcrypt::{hash, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Result, Write};
-
-use crate::data::{decrypt_directory, encrypt_directory};
 
 pub static VAULT_PATH: &str = "./.vault";
 
@@ -39,7 +39,15 @@ impl Admin {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = serde_json::to_string(&self)?;
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+
+        // let home_dir = std::env::var("HOME").expect("Unable to get home directory");
+        // let vault_path_temp = std::path::PathBuf::from(home_dir).join(".vault");
+
+        // if !vault_path_temp.exists() {
+        //     std::fs::create_dir_all(&vault_path_temp)?;
+        // }
+
+        let filepath = format!("{}/{}.json", vault_path(), self.username);
 
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
@@ -49,7 +57,7 @@ impl Admin {
     }
 
     pub fn read_data_from_json(&self) -> Result<Admin> {
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+        let filepath = format!("{}/{}.json", vault_path(), self.username);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();

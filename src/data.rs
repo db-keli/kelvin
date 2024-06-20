@@ -54,11 +54,11 @@ pub fn encrypt_directory() -> std::io::Result<()> {
     println!("Locking data.....");
     let output = Command::new("tar")
         .arg("-czvf")
-        .arg(format!("{}.tar.gz", VAULT_PATH).as_str())
-        .arg(VAULT_PATH)
+        .arg(format!("{}.tar.gz", vault_path()))
+        .arg(vault_path())
         .output()?;
 
-    let file_path = format!("{}.tar.gz.gpg", VAULT_PATH);
+    let file_path = format!("{}.tar.gz.gpg", vault_path());
     // Check if the file exists and delete it to avoid prompt
     if Path::new(file_path.as_str()).exists() {
         std::fs::remove_file(file_path)?;
@@ -77,7 +77,11 @@ pub fn encrypt_directory() -> std::io::Result<()> {
             println!("Error: {}", s);
         } else {
             let _ = Command::new("rm")
-                .args(["-rf", VAULT_PATH, format!("{}.tar.gz", VAULT_PATH).as_str()])
+                .args([
+                    "-rf",
+                    vault_path().as_str(),
+                    format!("{}.tar.gz", vault_path()).as_str(),
+                ])
                 .output()?;
         }
     } else {
@@ -99,11 +103,11 @@ pub fn decrypt_directory() -> std::io::Result<()> {
         .output()?;
     if output.status.success() {
         let output2 = Command::new("tar")
-            .args(["-xf", format!("{}.tar.gz", VAULT_PATH).as_str()])
+            .args(["-xf", "~/kekeli/.vault"])
             .output()?;
         if output2.status.success() {
             let _ = Command::new("rm")
-                .args(["-rf", format!("{}.tar.gz", VAULT_PATH).as_str()])
+                .args(["-rf", format!("{}.tar.gz", vault_path()).as_str()])
                 .output()?;
         } else {
             let s = String::from_utf8_lossy(&output.stderr);

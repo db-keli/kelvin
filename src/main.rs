@@ -9,7 +9,14 @@ use kelvin::{
 };
 
 use clap::{Arg, Command};
-use std::process;
+use deck::Deck;
+use deckdata::DeckData;
+mod password;
+mod prompt;
+
+use password::generate_password;
+use prompt::{clip, initialize_vault, prompt_deck, prompt_logins, prompt_deck_open_sesame};
+use std::{process, env};
 
 fn main() {
     initialize_vault().unwrap();
@@ -97,39 +104,22 @@ fn main() {
                     print!("You're not an admin\n");
                 }
             }
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    println!("Fill details to get password from the Vault.");
-                    let deck = prompt_deck_open_sesame().unwrap();
-                    let deck = Deck::new(&deck, "");
-                    let data = deck.read_data_from_json().unwrap();
-                    let password = String::from_utf8(data.decrypt()).unwrap();
-                    clip(&password);
-                    println!("Password copied to clipboard");
-                } else {
-                    println!("You're unauthorized");
-                }
+        } else {
+            let status = status.unwrap();
+            if status.prompt_auth(username, password).unwrap() {
+                println!("Fill details to get password from the Vault.");
+                let deck = prompt_deck_open_sesame().unwrap();
+                let deck = Deck::new(&deck, "");
+                let data = deck.read_data_from_json().unwrap();
+                let password = String::from_utf8(data.decrypt()).unwrap();
+                clip(&password);
+                println!("Password copied to clipboard");
+            } else {
+                println!("You're unathorized");
             }
         }
-    } else if let Some(matches) = matches.subcommand_matches("reset") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        let status = admin.read_data_from_json();
-        match status {
-            Err(err) => {
-                let err_msg = err.to_string();
-                if err_msg.contains("No such file") {
-                    print!("You're not an admin\n");
-                }
-            }
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let _ = remove_vault().unwrap();
-                } else {
-                    println!("You're unauthorized");
-                }
-            }
-        }
+    } else if let Some(_matches) = matches.subcommand_matches("reset") {
+        status = Some(true);
     }
+    env::set_var("RUST_BACKTRACE", "1");
 }
