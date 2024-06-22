@@ -1,3 +1,4 @@
+workspace = { members = ["tui"] }
 [package]
 name = "kelvin"
 version = "0.1.0"
