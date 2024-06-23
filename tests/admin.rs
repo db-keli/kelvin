@@ -2,7 +2,6 @@ use bcrypt::{hash, DEFAULT_COST};
 use kelvin::admin::*;
 use kelvin::password::generate_password;
 use kelvin::prompt::initialize_vault;
-use serde::{Deserialize, Serialize};
 
 #[test]
 fn constructor_valid() {
