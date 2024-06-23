@@ -11,7 +11,7 @@ use crate::data::{decrypt_directory, encrypt_directory};
 
 pub static VAULT_PATH: &str = "./.vault";
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[warn(dead_code)]
 pub struct Admin {
     pub username: String,
@@ -69,5 +69,29 @@ impl Admin {
         } else {
             Ok(false)
         }
+    }
+
+    //created for testing purposes
+    pub fn test_save_to_json(&self) -> Result<()> {
+        let contents = serde_json::to_string(&self)?;
+        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+
+        let mut file = File::create(filepath)?;
+        writeln!(file, "{}", contents)?;
+        file.flush()?;
+        Ok(())
+    }
+
+    //created for testing purposes
+    pub fn test_read_data_from_json(&self) -> Result<Admin> {
+        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+        let mut file = File::open(filepath)?;
+        let mut json_data = String::new();
+        file.read_to_string(&mut json_data)?;
+        file.flush()?;
+
+        let admin_data: Admin = serde_json::from_str(&json_data)?;
+
+        Ok(admin_data)
     }
 }
