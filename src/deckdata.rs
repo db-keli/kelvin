@@ -3,7 +3,9 @@ use crate::{
     data::{decrypt_directory, encrypt_directory},
 };
 use rsa::{
-    pkcs1::{self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey, EncodeRsaPublicKey},
+    pkcs1::{
+        self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey, EncodeRsaPublicKey,
+    },
     Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
 };
 
@@ -12,7 +14,7 @@ use serde_json::to_string;
 use std::fs::File;
 use std::io::{self, prelude::*, Result};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct DeckData {
     pub domain: String,
     pub ciphertext: Vec<u8>,
@@ -92,5 +94,34 @@ impl DeckData {
             .expect("Failed to decrypt");
 
         decrypted_data
+    }
+
+    //created for testing purposes
+    pub fn test_save_to_json(&self) -> Result<()> {
+        let contents = self.serialize_struct();
+        let filepath = format!("{}/{}.json", VAULT_PATH, self.domain);
+        let mut file = File::create(filepath)?;
+        writeln!(file, "{}", contents)?;
+        file.flush()?;
+        Ok(())
+    }
+
+    //created for testing purposes
+    #[allow(dead_code)]
+    pub fn test_read_data_from_json(&self) -> Result<DeckData> {
+        let filepath = format!("{}/{}.json", VAULT_PATH, self.domain);
+        let _ = decrypt_directory();
+        let mut file = File::open(filepath)?;
+        let mut json_data = String::new();
+        file.read_to_string(&mut json_data)?;
+        file.flush()?;
+        let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
+
+        let deck_data = deck_data_vec
+            .into_iter()
+            .next()
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "No data found in JSON"))?;
+
+        Ok(deck_data)
     }
 }
