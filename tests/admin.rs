@@ -1,6 +1,8 @@
 use bcrypt::{hash, DEFAULT_COST};
 use kelvin::admin::*;
 use kelvin::password::generate_password;
+use kelvin::prompt::initialize_vault;
+use serde::{Deserialize, Serialize};
 
 #[test]
 fn constructor_valid() {
@@ -43,4 +45,18 @@ fn test_verify_function() {
 
     let input_password = generate_password(12);
     assert!(!admin.verify_password(&input_password));
+}
+
+#[test]
+fn test_save_read_to_json() {
+    let _ = initialize_vault();
+
+    let password: String = generate_password(12);
+    let name = String::from("Michael");
+    let admin = Admin::new(&name, &password);
+
+    let _ = admin.test_save_to_json();
+    let data = admin.test_read_data_from_json().unwrap();
+
+    assert_eq!(data, admin);
 }
