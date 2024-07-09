@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     // Switch to the alternate screen and enable mouse capture 
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -29,10 +29,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // restore terminal
     disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+    )?;
     terminal.show_cursor()?;
 
-    // check for app run result
     if let Err(err) = res {
         eprintln!("Error: {}", err);
     }
