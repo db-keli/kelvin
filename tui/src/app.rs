@@ -1,32 +1,29 @@
+use kelvin::admin::Admin;
+use crate::ui::get_admin_details;
+
 enum MainmenuState {
     GenPasswd,
     CreateAdmin,
     AddDeck,
     OpenSesame,
     Reset,
+    Exit,
 }
 
 struct GenPasswd {
-    // Define fields needed for generating passwords
-    length: usize,
+    length: Option<usize>,
 }
 
 enum StartupState {
     Initialize,
     CheckAdmin,
-    UnlockVault,
-}
-
-pub struct Admin {
-    pub username: String,
-    pub password: String,
 }
 
 pub struct App {
     pub startup: StartupState,
     pub mainmenu: MainmenuState,
-    pub admin: Option<Admin>, // Admin details, if any
-    pub gen_passwd: Option<GenPasswd>, // State for generating password
+    pub admin: Option<Admin>,
+    pub gen_passwd: Option<GenPasswd>,
 }
 
 impl App {
@@ -37,5 +34,14 @@ impl App {
             admin: None,
             gen_passwd: None,
         }
+    }
+
+    pub fn create_admin(&mut self) {
+        let admin = get_admin_details();
+        self.admin = Some(admin);
+    }
+
+    pub fn gen_passwd(&mut self) {
+
     }
 }
