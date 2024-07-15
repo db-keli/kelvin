@@ -1,47 +1,72 @@
 use kelvin::admin::Admin;
-use crate::ui::get_admin_details;
 
-enum MainmenuState {
+enum Mainmenu {
     GenPasswd,
     CreateAdmin,
+    VerifyAdmin,
     AddDeck,
     OpenSesame,
     Reset,
-    Exit,
+    ExitApp,
 }
 
 struct GenPasswd {
     length: Option<usize>,
 }
 
-enum StartupState {
-    Initialize,
-    CheckAdmin,
+enum Startup {
+    WelcomePopUp,
 }
 
 pub struct App {
-    pub startup: StartupState,
-    pub mainmenu: MainmenuState,
-    pub admin: Option<Admin>,
-    pub gen_passwd: Option<GenPasswd>,
+    pub startup: Option<Startup>,
+    pub mainmenu: Option<Mainmenu>,
 }
 
 impl App {
-    pub fn new() -> App {
-        App {
-            startup: StartupState::Initialize,
-            mainmenu: MainmenuState::GenPasswd,
-            admin: None,
-            gen_passwd: None,
+    pub fn new() -> Self {
+        Self {
+            startup: Some(Startup::WelcomePopUp),
+            mainmenu: None,
         }
     }
-
-    pub fn create_admin(&mut self) {
-        let admin = get_admin_details();
-        self.admin = Some(admin);
+    pub fn main_menu(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu);
     }
 
     pub fn gen_passwd(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::GenPasswd);
+    }
 
+    pub fn create_admin(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::CreateAdmin);
+    }
+
+    pub fn verify_admin(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::VerifyAdmin);
+    }
+
+    pub fn create_deck(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::AddDeck);
+    } 
+
+    pub fn check_deck_contents(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::OpenSesame);
+    }
+
+    pub fn reset_vault(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::Reset);
+    }
+
+    pub fn quit_kelvin(&mut self) {
+        self.startup = None;
+        self.mainmenu = Some(Mainmenu::ExitApp);
     }
 }
