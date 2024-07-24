@@ -1,4 +1,5 @@
 use std::{error::Error, io};
+use std::{thread, time::Duration};
 
 use ratatui::{
     backend::{Backend, CrosstermBackend},
@@ -12,29 +13,24 @@ use ratatui::{
 };
 
 mod app;
-mod ui;
+mod ui_management;
 
-use crate::{
-    app::App,
-    ui::ui,
-};
+use app::App;
+use crate::ui_management::components::dbox;
+use crate::ui_management::pages::loader::LoaderPage;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // initialize terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    // Switch to the alternate screen and enable mouse capture 
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
 
-    // create app and run it
     let mut app = app::App::new();
     let res = run_tui(&mut terminal, &mut app);
 
-    // restore terminal
     disable_raw_mode()?;
     execute!(
         terminal.backend_mut(),
@@ -49,25 +45,32 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-///runs the TUI loop.
-fn run_tui<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<bool> {
+fn run_tui<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<(), std::io::Error> {
+    let area = terminal.size()?;
+    let mut loader_page = LoaderPage::new(area);
+    let loading_thread = thread::spawn(move || {
+        while loader_page.progress_count < 100 {
+            loader_page.update_progress();
+            thread::sleep(Duration::from_millis(100));
+        }
+    });
+
     loop {
-        terminal.draw(|f| ui(f, app))?;
-        //key.kind accesses the kind of key event,which can indicate whether the key was pressed, released, or repeated
-        if let Event::Key(key) = event::read()? {
-            if key.kind == event::KeyEventKind::Release {
-                //skips events that arent KeyEventKind::Press
-                continue;
-            } else if key.kind == event::KeyEventKind::Press {
-                match key.code {
-                    KeyCode::Char('g') => app.gen_passwd(),
-                    KeyCode::Char('a') => app.create_admin(),
-                    KeyCode::Char('v') => app.verify_admin(),
-                    KeyCode::Char('d') => app.create_deck(),
-                    KeyCode::Char('o') => app.check_deck_contents(),
-                    KeyCode::Char('r') => app.reset_vault(),
-                    KeyCode::Char('q') => app.quit_kelvin(),
-            }
+        let mut dbox = Box::new("KELVIN", Rect::new(0, 0, 30, 3));
+        terminal.draw(|f| loader_page.render(f))?;
+        //if let Event::Key(key) = event::read()? {
+            //if key.kind == event::KeyEventKind::Release {
+               // continue;
+           // } else if key.kind == event::KeyEventKind::Press {
+           //     match key.code {
+             //       KeyCode::Char('q') => return Ok(()),
+               //     _ => {}
+                //}
+            //}
+        //}
+        if loader_page.progress_count >= 100 {
+            break;
         }
     }
+    loading_thread.join().unwrap();
 }
