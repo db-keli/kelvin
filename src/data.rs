@@ -127,7 +127,7 @@ pub fn remove_vault() -> std::io::Result<()> {
         ])
         .output()?;
     if output.status.success() {
-        println!("Vault reseted successfully");
+        println!("Vault reset complete!");
     }
     Ok(())
 }
