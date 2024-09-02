@@ -1,3 +1,5 @@
+workspace = { members = ["tui"] }
+
 [package]
 name = "kelvin"
 version = "0.1.0"
@@ -15,9 +17,6 @@ serde_json = "1.0.115"
 clap = "4.5.4"
 rpassword = "7.3.1"
 clipboard = "0.5.0"
-ratatui = "0.26.3"
-crossterm = "0.27.0"
-
 
 [profile.dev]
 opt-level = 1
