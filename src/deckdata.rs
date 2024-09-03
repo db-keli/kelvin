@@ -1,6 +1,6 @@
 use crate::{
-    admin::{Admin, VAULT_PATH},
-    data::{decrypt_directory, encrypt_directory},
+    admin::Admin,
+    data::{decrypt_directory, encrypt_directory}, prompt::vault_path,
 };
 use rsa::{
     pkcs1::{
@@ -56,7 +56,8 @@ impl DeckData {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = self.serialize_struct();
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.domain);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
@@ -65,7 +66,8 @@ impl DeckData {
     }
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.domain);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
@@ -99,7 +101,8 @@ impl DeckData {
     //created for testing purposes
     pub fn test_save_to_json(&self) -> Result<()> {
         let contents = self.serialize_struct();
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.domain);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
         file.flush()?;
@@ -109,7 +112,8 @@ impl DeckData {
     //created for testing purposes
     #[allow(dead_code)]
     pub fn test_read_data_from_json(&self) -> Result<DeckData> {
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.domain);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();

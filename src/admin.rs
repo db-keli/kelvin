@@ -8,8 +8,9 @@ use std::fs::File;
 use std::io::{Read, Result, Write};
 
 use crate::data::{decrypt_directory, encrypt_directory};
+use crate::prompt::vault_path;
 
-pub static VAULT_PATH: &str = "./.vault";
+// pub static VAULT_PATH: &str = "./.vault";
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[warn(dead_code)]
@@ -39,7 +40,8 @@ impl Admin {
 
     pub fn save_to_json(&self) -> Result<()> {
         let contents = serde_json::to_string(&self)?;
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
 
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
@@ -49,7 +51,8 @@ impl Admin {
     }
 
     pub fn read_data_from_json(&self) -> Result<Admin> {
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
         let _ = decrypt_directory();
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
@@ -74,7 +77,8 @@ impl Admin {
     //created for testing purposes
     pub fn test_save_to_json(&self) -> Result<()> {
         let contents = serde_json::to_string(&self)?;
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
 
         let mut file = File::create(filepath)?;
         writeln!(file, "{}", contents)?;
@@ -84,7 +88,8 @@ impl Admin {
 
     //created for testing purposes
     pub fn test_read_data_from_json(&self) -> Result<Admin> {
-        let filepath = format!("{}/{}.json", VAULT_PATH, self.username);
+        let vault_dir = vault_path();
+        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
         let mut file = File::open(filepath)?;
         let mut json_data = String::new();
         file.read_to_string(&mut json_data)?;
