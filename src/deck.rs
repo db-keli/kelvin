@@ -27,10 +27,22 @@ pub fn get_keys() -> (RsaPrivateKey, RsaPublicKey, ThreadRng) {
 
 impl Deck {
     pub fn new(domain: &str, plaintext: &str) -> Deck {
-        let domain = domain.to_string();
+        let mut domain = domain.to_string();
+        let vault_dir = vault_path();
+        let mut counter = 1;
+
+        while Self::domain_exists(&vault_dir, &domain) {
+            domain = format!("{}_{}", domain, counter);
+            counter += 1;
+        }
         let plaintext = plaintext.to_string();
 
         Deck { domain, plaintext }
+    }
+
+    fn domain_exists(vault_dir: &std::path::PathBuf, domain: &str) -> bool {
+        let filepath = format!("{}/{}.json", vault_dir.display(), domain);
+        std::path::Path::new(&filepath).exists()
     }
 
     pub fn encrypt(&self) -> (Vec<u8>, (RsaPrivateKey, RsaPublicKey, ThreadRng)) {
