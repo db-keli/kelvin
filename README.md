@@ -19,7 +19,7 @@ kelvin is a password manager like 1password but for the terminal. kelvin generat
 - [ ] terminal user interface
 - [x] clipboard communication
 - [x] encrypt directory that saves encrypted password data with gnu gpg
-- [ ] handle multiple decks for same domain
+- [x] handle multiple decks for same domain
 - [x] reset vault
 - [ ] daemonize
 
