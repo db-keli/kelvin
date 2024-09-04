@@ -1,11 +1,8 @@
+use std::fs;
 use std::fs::{read_dir, read_to_string};
-use std::path::Path;
 use std::process::Command;
 
-use crate::{
-    admin::{Admin, VAULT_PATH},
-    deckdata,
-};
+use crate::{admin::Admin, deckdata, prompt::vault_path};
 
 pub fn check_file_exists(username: &str, directory_path: &str) -> bool {
     if let Ok(entries) = read_dir(directory_path) {
@@ -35,7 +32,8 @@ pub fn read_user_data(username: &str, directory_path: &str) -> Option<Admin> {
 }
 
 pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
-    let file_path = format!("{}/{}.json", VAULT_PATH, domain);
+    let vault_dir = vault_path();
+    let file_path = format!("{}/{}.json", vault_dir.display(), domain);
     if let Ok(file_content) = read_to_string(file_path) {
         if let Ok(deck_data) = serde_json::from_str(&file_content) {
             return Some(deck_data);
@@ -52,38 +50,36 @@ pub fn read_deck_data(domain: &str) -> Option<deckdata::DeckData> {
 ///
 pub fn encrypt_directory() -> std::io::Result<()> {
     println!("Locking data.....");
+
+    let vault_dir = vault_path();
+    let vault_tar = vault_dir.with_extension("tar.gz");
+
     let output = Command::new("tar")
         .arg("-czvf")
-        .arg(format!("{}.tar.gz", VAULT_PATH).as_str())
-        .arg(VAULT_PATH)
+        .arg(&vault_tar)
+        .arg(&vault_dir)
         .output()?;
 
-    let file_path = format!("{}.tar.gz.gpg", VAULT_PATH);
-    // Check if the file exists and delete it to avoid prompt
-    if Path::new(file_path.as_str()).exists() {
-        std::fs::remove_file(file_path)?;
-    }
-
     if output.status.success() {
+        println!("{}", String::from_utf8_lossy(&output.stdout));
+
+        // Encrypt the tar.gz file
         let output2 = Command::new("gpg")
-            .args([
-                "-c",
-                "--no-use-agent",
-                format!("{}.tar.gz", VAULT_PATH).as_str(),
-            ])
+            .args(["-c", "--no-use-agent", vault_tar.to_str().unwrap()])
             .output()?;
-        if !output.status.success() {
-            let s = String::from_utf8_lossy(&output2.stderr);
-            println!("Error: {}", s);
+        if output2.status.success() {
+            println!("{}", String::from_utf8_lossy(&output2.stdout));
+
+            // Remove the original vault directory and the tar.gz file
+            let _ = fs::remove_dir_all(&vault_dir);
+            let _ = fs::remove_file(&vault_tar);
         } else {
-            let _ = Command::new("rm")
-                .args(["-rf", VAULT_PATH, format!("{}.tar.gz", VAULT_PATH).as_str()])
-                .output()?;
+            println!("Error: {}", String::from_utf8_lossy(&output2.stderr));
         }
     } else {
-        let s = String::from_utf8_lossy(&output.stderr);
-        println!("Error: {}", s);
+        println!("Error: {}", String::from_utf8_lossy(&output.stderr));
     }
+
     Ok(())
 }
 
@@ -94,40 +90,51 @@ pub fn encrypt_directory() -> std::io::Result<()> {
 /// let _ = decrypt_directory()
 ///
 pub fn decrypt_directory() -> std::io::Result<()> {
+    let vault_dir = vault_path();
+    let vault_tar_gpg = vault_dir.with_extension("tar.gz.gpg");
+
     let output = Command::new("gpg")
-        .arg(format!("{}.tar.gz.gpg", VAULT_PATH).as_str())
+        .arg(vault_tar_gpg.to_str().unwrap())
         .output()?;
     if output.status.success() {
+        println!("{}", String::from_utf8_lossy(&output.stdout));
+
+        // Extract the tar.gz file
+        let vault_tar = vault_dir.with_extension("tar.gz");
         let output2 = Command::new("tar")
-            .args(["-xf", format!("{}.tar.gz", VAULT_PATH).as_str()])
+            .args(["-xf", vault_tar.to_str().unwrap()])
             .output()?;
+
         if output2.status.success() {
-            let _ = Command::new("rm")
-                .args(["-rf", format!("{}.tar.gz", VAULT_PATH).as_str()])
-                .output()?;
+            println!("{}", String::from_utf8_lossy(&output2.stdout));
+
+            // Remove the tar.gz file
+            let _ = fs::remove_file(vault_tar);
         } else {
-            let s = String::from_utf8_lossy(&output.stderr);
-            println!("{}", s);
+            println!("Error: {}", String::from_utf8_lossy(&output2.stderr));
         }
     } else {
-        let s = String::from_utf8_lossy(&output.stderr);
-        println!("{}", s);
+        println!("Error: {}", String::from_utf8_lossy(&output.stderr));
     }
 
     Ok(())
 }
 
 pub fn remove_vault() -> std::io::Result<()> {
+    let vault_dir = vault_path();
+    let vault_tar_gpg = vault_dir.with_extension("tar.gz.gpg");
     let output = Command::new("sudo")
         .args([
             "rm",
             "-rf",
-            VAULT_PATH,
-            format!("{}.tar.gz.gpg", VAULT_PATH).as_str(),
+            vault_dir.to_str().unwrap(),
+            vault_tar_gpg.to_str().unwrap(),
         ])
         .output()?;
     if output.status.success() {
-        println!("Vault reseted successfully");
+        println!("Vault reset successfully");
+    } else {
+        println!("Error: {}", String::from_utf8_lossy(&output.stderr));
     }
     Ok(())
 }

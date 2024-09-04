@@ -2,10 +2,17 @@ use clipboard::{ClipboardContext, ClipboardProvider};
 use rpassword;
 use std::fs;
 use std::io::{stdin, stdout, Result, Write};
-use std::path::Path;
 use std::thread;
 use std::time::Duration;
-use crate::admin::VAULT_PATH;
+
+use std::env;
+use std::path::PathBuf;
+
+pub fn vault_path() -> PathBuf {
+    let username = env::var("USER").unwrap_or_else(|_| "default_user".to_string());
+    let vault_path = format!("/home/{}/.vault", username);
+    PathBuf::from(vault_path)
+}
 
 pub fn prompt_deck() -> Result<(String, String)> {
     let _ = stdout().flush();
@@ -49,9 +56,11 @@ pub fn prompt_logins() -> Result<(String, String)> {
     stdout().flush()?;
 
     let mut username = String::new();
-    stdin().read_line(&mut username).expect("Failed to read line");
+    stdin()
+        .read_line(&mut username)
+        .expect("Failed to read line");
     username = username.trim().to_string();
-    
+
     print!("Enter admin password:");
     stdout().flush()?;
     let password = rpassword::read_password()?;
@@ -62,9 +71,9 @@ pub fn prompt_logins() -> Result<(String, String)> {
 }
 
 pub fn initialize_vault() -> Result<()> {
-    let path = Path::new(VAULT_PATH);
+    let path = vault_path();
     if !path.exists() {
-        fs::create_dir(VAULT_PATH)?;
+        fs::create_dir(path)?;
     }
     Ok(())
 }
