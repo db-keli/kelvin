@@ -11,7 +11,7 @@ readme = "README.md"
 homepage = "https://github.com/db-keli/kelvin"
 repository = "https://github.com/db-keli/kelvin"
 keywords = ["password-manager", "encryption", "crypto"]
-categories = ["command-line-utilities", "security"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 rand = "0.8.5"
