@@ -4,9 +4,9 @@ workspace = { members = ["./"] }
 name = "kelvin"
 version = "0.1.0"
 edition = "2021"
-authors = ["Dompeh Kofi Bright <kekelidompeh@gmail.com>" ]
+authors = ["Dompeh Kofi Bright <kekelidompeh@gmail.com>"]
 description = "Secure terminal password manager for linux"
-licencse = "MIT"
+license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/db-keli/kelvin"
 repository = "https://github.com/db-keli/kelvin"
