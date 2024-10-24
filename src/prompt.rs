@@ -10,7 +10,7 @@ use std::path::PathBuf;
 
 pub fn vault_path() -> PathBuf {
     let username = env::var("USER").unwrap_or_else(|_| "default_user".to_string());
-    let vault_path = format!("/home/{}/.vault", username);
+    let vault_path = format!("~/{}/.vault", username);
     PathBuf::from(vault_path)
 }
 
