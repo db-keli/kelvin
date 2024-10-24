@@ -5,13 +5,13 @@ use std::io::{stdin, stdout, Result, Write};
 use std::thread;
 use std::time::Duration;
 
+use dirs;
 use std::env;
 use std::path::PathBuf;
 
 pub fn vault_path() -> PathBuf {
-    let username = env::var("USER").unwrap_or_else(|_| "default_user".to_string());
-    let vault_path = format!("~/{}/.vault", username);
-    PathBuf::from(vault_path)
+    let home_dir = dirs::home_dir().expect("Unable to find home directory");
+    home_dir.join(".vault")
 }
 
 pub fn prompt_deck() -> Result<(String, String)> {
