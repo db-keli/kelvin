@@ -1,5 +1,5 @@
 #![allow(unused)]
-use kelvin::{
+use kelvin_rs::{
     admin::{self, Admin},
     data::{encrypt_directory, remove_vault},
     deck::Deck,
