@@ -1,11 +1,17 @@
-workspace = { members = ["tui"] }
+workspace = { members = ["./"] }
 
 [package]
 name = "kelvin"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Dompeh Kofi Bright <kekelidompeh@gmail.com>" ]
+description = "Secure terminal password manager for linux"
+licencse = "MIT"
+readme = "README.md"
+homepage = "https://github.com/db-keli/kelvin"
+repository = "https://github.com/db-keli/kelvin"
+keywords = ["password-manager", "encryption", "crypto"]
+categories = ["command-line-utilities", "security"]
 
 [dependencies]
 rand = "0.8.5"
@@ -19,4 +25,53 @@ rpassword = "7.3.1"
 clipboard = "0.5.0"
 
 [profile.dev]
-opt-level = 1
+opt-level = 0
+debug = true
+panic = "abort"
+
+[profile.test]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+debug = false
+panic = "unwind"
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.bench]
+opt-level = 3
+debug = false
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.13.0"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell", "msi"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+]
+# Publish jobs to run in CI
+pr-run-mode = "upload"
+# Whether to install an updater program
+install-updater = false
+# Skip checking whether the specified configuration files are up to date
+allow-dirty = ["ci", "msi"]
+
+# Configuration for 'cargo-run-bin'
+[metadata.bin]
+cargo-dist = { version = "0.5.0", locked = true }
