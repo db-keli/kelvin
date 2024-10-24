@@ -1,4 +1,8 @@
-### kelvin
+# kelvin
+
+### Intro
+The kelvin crate provides modules and methods used for creating simple password encryption managers. The crate was mainly built
+while working on kelvin, a terminal password manager.
 
 `terminal password manager`
 
