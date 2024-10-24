@@ -1,8 +1,8 @@
-use kelvin::admin::*;
-use kelvin::deck::*;
-use kelvin::deckdata::*;
-use kelvin::password::generate_password;
-use kelvin::prompt::initialize_vault;
+use kelvin_rs::admin::*;
+use kelvin_rs::deck::*;
+use kelvin_rs::deckdata::*;
+use kelvin_rs::password::generate_password;
+use kelvin_rs::prompt::initialize_vault;
 
 #[test]
 fn test_encryption() {
