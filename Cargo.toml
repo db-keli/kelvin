@@ -1,7 +1,7 @@
 workspace = { members = ["./"] }
 
 [package]
-name = "kelvin"
+name = "kelvin-rs"
 version = "0.1.0"
 edition = "2021"
 authors = ["Dompeh Kofi Bright <kekelidompeh@gmail.com>"]
