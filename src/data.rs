@@ -1,11 +1,19 @@
 use std::fs;
-use std::process::Command;
 
+use aes_gcm::{
+    aead::{Aead, KeyInit},
+    Aes256Gcm, Key, Nonce,
+};
+use argon2::Argon2;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 
 use crate::admin::Admin;
 use crate::deckdata::DeckData;
 use crate::prompt::{vault_encrypted_path, vault_path};
+
+const SALT_LEN: usize = 16;
+const NONCE_LEN: usize = 12;
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct VaultFile {
@@ -13,6 +21,7 @@ pub struct VaultFile {
     pub decks: Vec<DeckData>,
 }
 
+// used by tests only — reads the plain unencrypted vault file
 pub fn read_vault() -> VaultFile {
     if let Ok(content) = fs::read_to_string(vault_path()) {
         if let Ok(vault) = serde_json::from_str(&content) {
@@ -22,66 +31,77 @@ pub fn read_vault() -> VaultFile {
     VaultFile::default()
 }
 
+// used by tests only
 pub fn write_vault(vault: &VaultFile) -> std::io::Result<()> {
     let content = serde_json::to_string(vault).unwrap();
     fs::write(vault_path(), content)?;
     Ok(())
 }
 
-pub fn encrypt_vault() -> std::io::Result<()> {
-    println!("Locking data.....");
-    let path = vault_path();
-    if !path.exists() {
-        return Ok(());
+pub fn load_vault(password: &str) -> std::io::Result<VaultFile> {
+    let data = fs::read(vault_encrypted_path())?;
+
+    if data.len() < SALT_LEN + NONCE_LEN {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Vault file is corrupted",
+        ));
     }
-    let output = Command::new("gpg")
-        .args(["-c", "--no-use-agent", path.to_str().unwrap()])
-        .output()?;
-    if output.status.success() {
-        let _ = fs::remove_file(&path);
-    } else {
-        println!("Error: {}", String::from_utf8_lossy(&output.stderr));
-    }
-    Ok(())
+
+    let salt = &data[..SALT_LEN];
+    let nonce_bytes = &data[SALT_LEN..SALT_LEN + NONCE_LEN];
+    let ciphertext = &data[SALT_LEN + NONCE_LEN..];
+
+    let mut key_bytes = [0u8; 32];
+    Argon2::default()
+        .hash_password_into(password.as_bytes(), salt, &mut key_bytes)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+
+    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
+    let plaintext = cipher
+        .decrypt(Nonce::from_slice(nonce_bytes), ciphertext)
+        .map_err(|_| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Wrong password or corrupted vault",
+            )
+        })?;
+
+    serde_json::from_slice(&plaintext)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e.to_string()))
 }
 
-pub fn decrypt_vault() -> std::io::Result<()> {
-    let encrypted_path = vault_encrypted_path();
-    if !encrypted_path.exists() {
-        return Ok(());
-    }
-    let output = Command::new("gpg")
-        .arg(encrypted_path.to_str().unwrap())
-        .output()?;
-    if output.status.success() {
-        let _ = fs::remove_file(&encrypted_path);
-    } else {
-        println!("Error: {}", String::from_utf8_lossy(&output.stderr));
-    }
+pub fn save_vault(vault: &VaultFile, password: &str) -> std::io::Result<()> {
+    let mut salt = [0u8; SALT_LEN];
+    let mut nonce_bytes = [0u8; NONCE_LEN];
+    rand::thread_rng().fill_bytes(&mut salt);
+    rand::thread_rng().fill_bytes(&mut nonce_bytes);
+
+    let mut key_bytes = [0u8; 32];
+    Argon2::default()
+        .hash_password_into(password.as_bytes(), &salt, &mut key_bytes)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+
+    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
+    let plaintext = serde_json::to_vec(vault).unwrap();
+    let ciphertext = cipher
+        .encrypt(Nonce::from_slice(&nonce_bytes), plaintext.as_slice())
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+
+    let mut data = Vec::with_capacity(SALT_LEN + NONCE_LEN + ciphertext.len());
+    data.extend_from_slice(&salt);
+    data.extend_from_slice(&nonce_bytes);
+    data.extend_from_slice(&ciphertext);
+
+    fs::write(vault_encrypted_path(), data)?;
     Ok(())
 }
 
 pub fn remove_vault() -> std::io::Result<()> {
-    let output = Command::new("sudo")
-        .args([
-            "rm",
-            "-rf",
-            vault_path().to_str().unwrap(),
-            vault_encrypted_path().to_str().unwrap(),
-        ])
-        .output()?;
-    if output.status.success() {
-        println!("Vault reset successfully");
-    } else {
-        println!("Error: {}", String::from_utf8_lossy(&output.stderr));
+    let path = vault_encrypted_path();
+    if path.exists() {
+        fs::remove_file(&path)?;
     }
+    println!("Vault reset successfully");
     Ok(())
-}
-
-pub fn list_decks() -> Vec<(String, Option<String>)> {
-    read_vault()
-        .decks
-        .into_iter()
-        .map(|d| (d.domain, d.notes))
-        .collect()
 }

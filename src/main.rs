@@ -1,21 +1,21 @@
 #![allow(unused)]
 use kelvin_rs::{
-    admin::{self, Admin},
-    data::{list_decks, remove_vault},
+    admin::Admin,
+    data::{load_vault, remove_vault, save_vault, VaultFile},
     deck::Deck,
-    deckdata::{delete_deck, update_deck, DeckData},
+    deckdata::DeckData,
     password::generate_password,
     prompt::{
-        clip, initialize_vault, prompt_deck, prompt_deck_open_sesame, prompt_env_var,
-        prompt_logins, prompt_notes,
+        clip, prompt_deck, prompt_deck_open_sesame, prompt_env_var, prompt_logins,
+        prompt_master_password, prompt_new_master_password, prompt_notes, vault_encrypted_path,
     },
 };
 
-use clap::{ArgAction, Arg, Command};
-use std::process;
+use clap::{Arg, ArgAction, Command};
+use rand::thread_rng;
+use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 
 fn main() {
-    initialize_vault().unwrap();
     let matches = Command::new("kelvin")
         .version("0.0.1")
         .author("Dompeh Kofi Bright, kekelidompeh@gmail.com")
@@ -50,167 +50,153 @@ fn main() {
         )
         .get_matches();
 
+    // generate needs no vault or auth
+    if let Some(matches) = matches.subcommand_matches("generate") {
+        let length = matches
+            .get_one::<String>("length")
+            .and_then(|l| l.parse::<usize>().ok())
+            .unwrap_or(12);
+        let password = generate_password(length);
+        clip(&password);
+        return;
+    }
+
+    // all other commands need the master password
+    let master_password = if vault_encrypted_path().exists() {
+        prompt_master_password().expect("Failed to read master password")
+    } else {
+        let pw = prompt_new_master_password().expect("Failed to read master password");
+        save_vault(&VaultFile::default(), &pw).expect("Failed to create vault");
+        pw
+    };
+
+    // create-admin only needs master password, not admin login
     if let Some(_) = matches.subcommand_matches("create-admin") {
-        let admin_credentials = prompt_logins().expect("Failed to get admin credentials");
-        let mut admin = Admin::new(&admin_credentials.0, &admin_credentials.1);
+        let mut vault = load_vault(&master_password).unwrap_or_default();
+        let (username, password) = prompt_logins().unwrap();
+        let mut admin = Admin::new(&username, &password);
         admin.hash_password();
-        admin.save_to_json().expect("Failed to save admin to JSON");
-    } else if let Some(matches) = matches.subcommand_matches("generate") {
-        if matches.contains_id("length") {
-            let length = matches
-                .get_one::<String>("length")
-                .unwrap()
-                .parse::<usize>()
-                .unwrap();
-            let password = generate_password(length);
-            clip(&password);
-        } else {
-            let password = generate_password(12);
-            clip(&password);
+        vault.admin = Some(admin);
+        save_vault(&vault, &master_password).expect("Failed to save vault");
+        println!("Admin created.");
+        return;
+    }
+
+    // load vault once for all remaining commands
+    let mut vault = match load_vault(&master_password) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("Failed to open vault: {}", e);
+            return;
         }
-    } else if let Some(_) = matches.subcommand_matches("deck") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(err) => print!("You're not an admin\n{}\n", err),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    println!("Add a deck to the Vault.");
-                    let (domain, password) = prompt_deck().unwrap();
-                    let notes = prompt_notes().unwrap();
-                    let deck = Deck::new(&domain, &password);
-                    let encrypted_data = deck.encrypt();
-                    let deck_data = DeckData::new(
-                        admin,
-                        deck.domain,
-                        encrypted_data.0,
-                        encrypted_data.1 .1,
-                        encrypted_data.1 .0,
-                        notes,
-                    );
-                    deck_data.save_to_json().unwrap();
-                    println!("Deck saved.");
-                } else {
-                    println!("You're unauthorized");
+    };
+
+    // admin auth required for all remaining commands
+    let (admin_username, admin_password) = prompt_logins().expect("Failed to read credentials");
+    let stored_admin = match vault.admin.clone() {
+        Some(a) => a,
+        None => {
+            println!("No admin found. Run create-admin first.");
+            return;
+        }
+    };
+    if stored_admin.username != admin_username || !stored_admin.verify_password(&admin_password) {
+        println!("You're unauthorized");
+        return;
+    }
+
+    if let Some(_) = matches.subcommand_matches("list") {
+        if vault.decks.is_empty() {
+            println!("No entries in vault.");
+        } else {
+            for deck in &vault.decks {
+                match &deck.notes {
+                    Some(n) => println!("{}\t{}", deck.domain, n),
+                    None => println!("{}", deck.domain),
                 }
             }
         }
-    } else if let Some(_) = matches.subcommand_matches("list") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(_) => println!("You're not an admin"),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let decks = list_decks();
-                    if decks.is_empty() {
-                        println!("No entries in vault.");
-                    } else {
-                        for (domain, notes) in decks {
-                            match notes {
-                                Some(n) => println!("{}\t{}", domain, n),
-                                None => println!("{}", domain),
-                            }
-                        }
-                    }
+    } else if let Some(_) = matches.subcommand_matches("deck") {
+        let (domain, password) = prompt_deck().unwrap();
+        let notes = prompt_notes().unwrap();
+        let deck = Deck::new(&domain, &password);
+        let encrypted = deck.encrypt();
+        let deck_data = DeckData::new(
+            stored_admin,
+            deck.domain.clone(),
+            encrypted.0,
+            encrypted.1 .1,
+            encrypted.1 .0,
+            notes,
+        );
+        if let Some(pos) = vault.decks.iter().position(|d| d.domain == deck.domain) {
+            vault.decks[pos] = deck_data;
+        } else {
+            vault.decks.push(deck_data);
+        }
+        save_vault(&vault, &master_password).unwrap();
+        println!("Deck saved.");
+    } else if let Some(m) = matches.subcommand_matches("open-sesame") {
+        let domain = prompt_deck_open_sesame().unwrap();
+        match vault.decks.iter().find(|d| d.domain == domain) {
+            None => println!("Domain '{}' not found.", domain),
+            Some(data) => {
+                if let Some(notes) = &data.notes {
+                    println!("Notes: {}", notes);
+                }
+                let password = String::from_utf8(data.decrypt()).unwrap();
+                if m.get_flag("stdout") {
+                    println!("{}", password);
                 } else {
-                    println!("You're unauthorized");
+                    clip(&password);
                 }
             }
         }
     } else if let Some(_) = matches.subcommand_matches("delete") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(_) => println!("You're not an admin"),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let domain = prompt_deck_open_sesame().unwrap();
-                    delete_deck(&domain).unwrap();
-                    println!("Deleted {}", domain);
-                } else {
-                    println!("You're unauthorized");
-                }
-            }
+        let domain = prompt_deck_open_sesame().unwrap();
+        let before = vault.decks.len();
+        vault.decks.retain(|d| d.domain != domain);
+        if vault.decks.len() < before {
+            save_vault(&vault, &master_password).unwrap();
+            println!("Deleted {}", domain);
+        } else {
+            println!("Domain '{}' not found.", domain);
         }
     } else if let Some(_) = matches.subcommand_matches("update") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(_) => println!("You're not an admin"),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let domain = prompt_deck_open_sesame().unwrap();
-                    let (_, new_password) = prompt_deck().unwrap();
-                    update_deck(&domain, &new_password, admin).unwrap();
-                    println!("Updated {}", domain);
-                } else {
-                    println!("You're unauthorized");
-                }
-            }
+        let domain = prompt_deck_open_sesame().unwrap();
+        if let Some(pos) = vault.decks.iter().position(|d| d.domain == domain) {
+            let notes = vault.decks[pos].notes.clone();
+            let (_, new_password) = prompt_deck().unwrap();
+            let mut rng = thread_rng();
+            let private_key = RsaPrivateKey::new(&mut rng, 2048).unwrap();
+            let public_key = RsaPublicKey::from(&private_key);
+            let ciphertext = public_key
+                .encrypt(&mut rng, Pkcs1v15Encrypt, new_password.as_bytes())
+                .unwrap();
+            vault.decks[pos] = DeckData::new(
+                stored_admin,
+                domain.clone(),
+                ciphertext,
+                public_key,
+                private_key,
+                notes,
+            );
+            save_vault(&vault, &master_password).unwrap();
+            println!("Updated {}", domain);
+        } else {
+            println!("Domain '{}' not found.", domain);
         }
     } else if let Some(_) = matches.subcommand_matches("env") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(_) => println!("You're not an admin"),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let domain = prompt_deck_open_sesame().unwrap();
-                    let var_name = prompt_env_var().unwrap();
-                    let deck = Deck::from_domain(&domain);
-                    let data = deck.read_data_from_json().unwrap();
-                    let password = String::from_utf8(data.decrypt()).unwrap();
-                    println!("export {}={}", var_name, password);
-                } else {
-                    println!("You're unauthorized");
-                }
-            }
-        }
-    } else if let Some(matches) = matches.subcommand_matches("open-sesame") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(_) => println!("You're not an admin"),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let domain = prompt_deck_open_sesame().unwrap();
-                    let deck = Deck::from_domain(&domain);
-                    let data = deck.read_data_from_json().unwrap();
-                    if let Some(notes) = &data.notes {
-                        println!("Notes: {}", notes);
-                    }
-                    let password = String::from_utf8(data.decrypt()).unwrap();
-                    let to_stdout = matches.get_flag("stdout");
-                    if to_stdout {
-                        println!("{}", password);
-                    } else {
-                        clip(&password);
-                    }
-                } else {
-                    println!("You're unauthorized");
-                }
+        let domain = prompt_deck_open_sesame().unwrap();
+        let var_name = prompt_env_var().unwrap();
+        match vault.decks.iter().find(|d| d.domain == domain) {
+            None => println!("Domain '{}' not found.", domain),
+            Some(data) => {
+                let password = String::from_utf8(data.decrypt()).unwrap();
+                println!("export {}={}", var_name, password);
             }
         }
     } else if let Some(_) = matches.subcommand_matches("reset") {
-        let (admin_username, admin_password) =
-            prompt_logins().expect("Failed to get admin credentials");
-        let admin = Admin::new(&admin_username, &admin_password);
-        match admin.read_data_from_json() {
-            Err(_) => println!("You're not an admin"),
-            Ok(admin) => {
-                if admin.prompt_auth(admin_username, admin_password).unwrap() {
-                    let _ = remove_vault().unwrap();
-                } else {
-                    println!("You're unauthorized");
-                }
-            }
-        }
+        remove_vault().unwrap();
     }
 }

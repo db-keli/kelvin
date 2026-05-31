@@ -15,7 +15,22 @@ pub fn vault_path() -> PathBuf {
 
 pub fn vault_encrypted_path() -> PathBuf {
     let home_dir = dirs::home_dir().expect("Unable to find home directory");
-    home_dir.join(".vault.json.gpg")
+    home_dir.join(".vault.enc")
+}
+
+pub fn prompt_master_password() -> Result<String> {
+    print!("Master password: ");
+    stdout().flush()?;
+    let password = rpassword::read_password()?;
+    println!();
+    Ok(password)
+}
+
+pub fn prompt_new_master_password() -> Result<String> {
+    println!("New vault. Choose a master password:");
+    let password = rpassword::read_password()?;
+    println!();
+    Ok(password)
 }
 
 pub fn prompt_deck() -> Result<(String, String)> {
@@ -63,7 +78,6 @@ pub fn prompt_logins() -> Result<(String, String)> {
     print!("Enter admin password:");
     stdout().flush()?;
     let password = rpassword::read_password()?;
-    print!("");
     println!();
 
     Ok((username, password))
@@ -94,10 +108,10 @@ pub fn prompt_env_var() -> Result<String> {
     Ok(var.trim().to_string())
 }
 
+// used by tests to create a plain vault file
 pub fn initialize_vault() -> Result<()> {
     let path = vault_path();
-    let encrypted_path = vault_encrypted_path();
-    if !path.exists() && !encrypted_path.exists() {
+    if !path.exists() {
         fs::write(&path, r#"{"admin":null,"decks":[]}"#)?;
     }
     Ok(())
