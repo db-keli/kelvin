@@ -1,0 +1,73 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-13
+            binary: kelvin-macos-x86_64
+
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            binary: kelvin-macos-aarch64
+
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            binary: kelvin-linux-x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: rename binary
+        run: cp target/${{ matrix.target }}/release/kelvin-rs ${{ matrix.binary }}
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary }}
+          path: ${{ matrix.binary }}
+
+  release:
+    name: create release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: generate release notes
+        run: |
+          cargo install git-cliff --quiet
+          git-cliff --config cliff.toml --latest -o RELEASE_NOTES.md
+
+      - name: create github release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: RELEASE_NOTES.md
+          files: |
+            kelvin-macos-x86_64
+            kelvin-macos-aarch64
+            kelvin-linux-x86_64
