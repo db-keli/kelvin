@@ -12,10 +12,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: x86_64-apple-darwin
-            os: macos-13
-            binary: kelvin-macos-x86_64
-
           - target: aarch64-apple-darwin
             os: macos-latest
             binary: kelvin-macos-aarch64
@@ -72,6 +68,5 @@ jobs:
         with:
           body_path: RELEASE_NOTES.md
           files: |
-            kelvin-macos-x86_64
             kelvin-macos-aarch64
             kelvin-linux-x86_64
