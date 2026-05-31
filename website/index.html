@@ -366,20 +366,28 @@
   <section id="install">
     <p class="sec-kicker">get started</p>
     <h2 class="sec-title">Install kelvin</h2>
-    <p class="sec-intro">You need <span class="mono">git</span> and the Rust toolchain (<span class="mono">cargo</span>). No other dependencies.</p>
+
+    <p class="sec-intro" style="margin-bottom:24px;">Two ways to install — download a pre-built binary or build from source with Cargo.</p>
+
+    <p class="sec-kicker" style="margin-top:0">option 1 — pre-built binary (macOS x86_64)</p>
+    <div class="steps" style="margin-top:14px;">
+      <div class="step">
+        <div class="no"></div>
+        <div class="body">
+          <h4>Download the binary from the <a href="https://github.com/db-keli/kelvin/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">latest release</a></h4>
+          <div class="codeblock"><span class="pr">$</span> curl -L https://github.com/db-keli/kelvin/releases/latest/download/kelvin-macos-x86_64 -o kelvin<br><span class="pr">$</span> chmod +x kelvin<br><span class="pr">$</span> mv kelvin /usr/local/bin/kelvin</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sec-kicker" style="margin-top:36px;">option 2 — build from source</p>
+    <p style="color:var(--ink-soft);font-size:15px;margin:8px 0 14px;">Requires <span class="mono">git</span> and the Rust toolchain (<span class="mono">cargo</span>).</p>
     <div class="steps">
       <div class="step">
         <div class="no"></div>
         <div class="body">
-          <h4>Clone the repository</h4>
-          <div class="codeblock"><span class="pr">$</span> git clone https://github.com/db-keli/kelvin.git<br><span class="pr">$</span> cd kelvin</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="no"></div>
-        <div class="body">
-          <h4>Build and install</h4>
-          <div class="codeblock"><span class="pr">$</span> cargo install --path .</div>
+          <h4>Clone and install</h4>
+          <div class="codeblock"><span class="pr">$</span> git clone https://github.com/db-keli/kelvin.git<br><span class="pr">$</span> cd kelvin<br><span class="pr">$</span> cargo install --path .</div>
         </div>
       </div>
       <div class="step">

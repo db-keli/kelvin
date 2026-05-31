@@ -1,74 +1,93 @@
-<img src="kelvin-logo.png" width="150" alt="kelvin logo">
+<img src="kelvin-logo.png" width="120" alt="kelvin logo">
 
-### Intro
+# kelvin
 
-The kelvin crate provides modules and methods used for creating simple password encryption managers. The crate was mainly built
-while working on kelvin, a terminal password manager.
+A terminal password manager. Generates strong passwords to your clipboard and stores them encrypted locally — no cloud, no external tools, one master password.
 
-`terminal password manager`
+Vault is a single `~/.vault.enc` file locked with AES-256-GCM. Key derived from your master password via Argon2id. One prompt per session.
 
-### about
-
-kelvin is a password manager like 1password but for the terminal. kelvin generates strong passwords from the terminal to your clipboard. generated passwords could be encrypted and saved with the domain names or what they correspond to, locally. all encrypted passwords are saved locally for later decryption by the authorized user. kelvin saves the data locally and encrypts the hidden directory with the gnu gpg.
-
-<p>
-    in future kelvin is to be a terminal app with tui, daemonized so it could be started with a keybinding when user wants to get their password or add a password to the vault.
-</p>
-
-<p>still building and welcoming contributions</p>
-
-### features to handle
-
-- [ ] terminal user interface
-- [x] clipboard communication
-- [x] encrypt directory that saves encrypted password data with gnu gpg
-- [x] handle multiple decks for same domain
-- [x] reset vault
-- [ ] daemonize
+---
 
 ## Installation
 
-To install Kelvin, follow these steps:
+### Option 1 — pre-built binary (macOS x86_64)
 
-1. **Clone the repository:**
+Download from the [latest release](https://github.com/db-keli/kelvin/releases/latest):
 
-   ```sh
-   git clone https://github.com/db-keli/kelvin.git
-   cd kelvin
-   ```
+```sh
+curl -L https://github.com/db-keli/kelvin/releases/latest/download/kelvin-macos-x86_64 -o kelvin
+chmod +x kelvin
+mv kelvin /usr/local/bin/kelvin
+```
 
-2. **Build the project using Cargo:**
+### Option 2 — build from source
 
-   ```sh
-   cargo build --release
-   ```
+Requires the [Rust toolchain](https://rustup.rs).
 
-3. **Install the tool:**
-   ```sh
-   cargo install --path .
-   ```
+```sh
+git clone https://github.com/db-keli/kelvin.git
+cd kelvin
+cargo install --path .
+```
+
+---
 
 ## Usage
-
-Kelvin offers several commands for different operations related to password management and user account administration:
-
-### Commands Overview
-
-- `generate`
-- `create-admin`
-- `deck`
-- `reset`
-- `open-sesame`
-- `help`
-
-**Usage:**
 
 ```sh
 kelvin [COMMAND]
 ```
 
-### contributing
+| Command | Description |
+|---|---|
+| `generate` | Generate a random password and copy to clipboard. Use `-l` to set length. |
+| `create-admin` | Set up your vault and admin account. |
+| `deck` | Add a password entry. Prompts for domain, password, and optional notes. |
+| `list` | List all stored domains with notes. |
+| `open-sesame` | Retrieve a password to clipboard. Pass `--stdout` to print instead. |
+| `env` | Output a password as `export VAR=value` for shell scripting. |
+| `update` | Change the password for a stored entry. |
+| `delete` | Remove an entry by domain name. |
+| `reset` | Wipe the vault. |
 
-Welcoming contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more details on how to contribute.
+### Example
 
-join [discord server](https://discord.gg/kMb55jNV9T) for community.
+```sh
+# first run — creates the vault
+kelvin create-admin
+
+# add a server credential
+kelvin deck
+# Enter domain: prod/db
+# Enter password: ••••••
+# Enter notes (optional): host: db.prod.example.com, port: 5432
+
+# list everything
+kelvin list
+
+# retrieve to clipboard
+kelvin open-sesame
+
+# use in a script
+eval $(kelvin env)
+echo $DB_PASSWORD
+```
+
+---
+
+## Roadmap
+
+- [x] Clipboard with auto-clear (30s)
+- [x] AES-256-GCM encrypted vault
+- [x] Namespace support (`prod/db`, `staging/api`)
+- [x] Notes per entry
+- [x] List, update, delete entries
+- [x] Script-friendly output (`--stdout`, `env`)
+- [ ] Terminal UI (TUI)
+- [ ] Daemonize with keybinding
+
+---
+
+## Contributing
+
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
