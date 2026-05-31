@@ -18,10 +18,12 @@ conventional_commits = false
 filter_unconventional = false
 commit_parsers = [
   { message = "^Merge", skip = true },
-  { message = "(?i)readme|logo|cargo\\.toml|version|alignment|heading", skip = true },
+  { message = "^fix.*(logo|readme logo|alignment|heading)", skip = true },
+  { message = "^(use markdown|move logo|remove kelvin|updated version|cargo\\.toml|readme$|Update README)", skip = true },
+  { message = "^fix$|^fix: tests|^cleanup$", skip = true },
   { message = "^feat|^add", group = "Added" },
   { message = "^fix|^bug", group = "Fixed" },
-  { message = "^refactor|^replace|^swap|^cleanup", group = "Changed" },
+  { message = "^refactor|^replace|^swap|^cleanup|^drop|^update", group = "Changed" },
   { message = ".*", group = "Changed" },
 ]
 filter_commits = true

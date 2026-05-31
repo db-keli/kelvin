@@ -61,7 +61,8 @@ jobs:
       - name: generate release notes
         run: |
           cargo install git-cliff --quiet
-          git-cliff --config cliff.toml --latest -o RELEASE_NOTES.md
+          PREV=$(git tag --sort=-version:refname | grep -v "^${{ github.ref_name }}$" | head -1)
+          git-cliff "$PREV".."${{ github.ref_name }}" --config cliff.toml --tag "${{ github.ref_name }}" -o RELEASE_NOTES.md
 
       - name: create github release
         uses: softprops/action-gh-release@v2
