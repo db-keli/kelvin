@@ -1,4 +1,4 @@
-# <img src="kelvin-logo.png" height="80" width="80" alt="kelvin logo"> kelvin
+# <img src="kelvin-logo.png" width="80" alt="kelvin logo"> kelvin
 
 ### Intro
 
