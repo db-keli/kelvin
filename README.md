@@ -1,7 +1,5 @@
 <img src="kelvin-logo.png" width="120" alt="kelvin logo">
 
-# kelvin
-
 A terminal password manager. Generates strong passwords to your clipboard and stores them encrypted locally — no cloud, no external tools, one master password.
 
 Vault is a single `~/.vault.enc` file locked with AES-256-GCM. Key derived from your master password via Argon2id. One prompt per session.
@@ -38,17 +36,17 @@ cargo install --path .
 kelvin [COMMAND]
 ```
 
-| Command | Description |
-|---|---|
-| `generate` | Generate a random password and copy to clipboard. Use `-l` to set length. |
-| `create-admin` | Set up your vault and admin account. |
-| `deck` | Add a password entry. Prompts for domain, password, and optional notes. |
-| `list` | List all stored domains with notes. |
-| `open-sesame` | Retrieve a password to clipboard. Pass `--stdout` to print instead. |
-| `env` | Output a password as `export VAR=value` for shell scripting. |
-| `update` | Change the password for a stored entry. |
-| `delete` | Remove an entry by domain name. |
-| `reset` | Wipe the vault. |
+| Command        | Description                                                               |
+| -------------- | ------------------------------------------------------------------------- |
+| `generate`     | Generate a random password and copy to clipboard. Use `-l` to set length. |
+| `create-admin` | Set up your vault and admin account.                                      |
+| `deck`         | Add a password entry. Prompts for domain, password, and optional notes.   |
+| `list`         | List all stored domains with notes.                                       |
+| `open-sesame`  | Retrieve a password to clipboard. Pass `--stdout` to print instead.       |
+| `env`          | Output a password as `export VAR=value` for shell scripting.              |
+| `update`       | Change the password for a stored entry.                                   |
+| `delete`       | Remove an entry by domain name.                                           |
+| `reset`        | Wipe the vault.                                                           |
 
 ### Example
 
