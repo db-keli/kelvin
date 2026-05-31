@@ -1,7 +1,6 @@
-use crate::{
-    admin::Admin,
-    data::{decrypt_directory, encrypt_directory}, prompt::vault_path,
-};
+use crate::admin::Admin;
+use crate::data::{decrypt_vault, encrypt_vault, read_vault, write_vault};
+use rand::thread_rng;
 use rsa::{
     pkcs1::{
         self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey, EncodeRsaPublicKey,
@@ -10,17 +9,16 @@ use rsa::{
 };
 
 use serde::{Deserialize, Serialize};
-use serde_json::to_string;
-use std::fs::File;
-use std::io::{self, prelude::*, Result};
+use std::io::{self, Result};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct DeckData {
     pub domain: String,
     pub ciphertext: Vec<u8>,
     pub admin_data: Admin,
     pub rsa_public_key: String,
     pub rsa_private_key: String,
+    pub notes: Option<String>,
 }
 
 impl DeckData {
@@ -30,6 +28,7 @@ impl DeckData {
         ciphertext: Vec<u8>,
         rsa_public_key: RsaPublicKey,
         rsa_private_key: RsaPrivateKey,
+        notes: Option<String>,
     ) -> DeckData {
         let pem_pub = rsa_public_key.to_pkcs1_pem(pkcs1::LineEnding::LF).unwrap();
         let pem_prv = rsa_private_key
@@ -42,46 +41,33 @@ impl DeckData {
             admin_data,
             rsa_public_key: pem_pub,
             rsa_private_key: pem_prv,
-        }
-    }
-
-    pub fn serialize_struct(&self) -> String {
-        let dat_ser = to_string(&vec![self]);
-        if let Err(err) = &dat_ser {
-            err.to_string()
-        } else {
-            dat_ser.unwrap()
+            notes,
         }
     }
 
     pub fn save_to_json(&self) -> Result<()> {
-        let contents = self.serialize_struct();
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
-        let mut file = File::create(filepath)?;
-        writeln!(file, "{}", contents)?;
-        file.flush()?;
-        let _ = encrypt_directory();
+        let _ = decrypt_vault();
+        let mut vault = read_vault();
+        if let Some(pos) = vault.decks.iter().position(|d| d.domain == self.domain) {
+            vault.decks[pos] = self.clone();
+        } else {
+            vault.decks.push(self.clone());
+        }
+        write_vault(&vault)?;
+        let _ = encrypt_vault();
         Ok(())
     }
+
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
-        let _ = decrypt_directory();
-        let mut file = File::open(filepath)?;
-        let mut json_data = String::new();
-        file.read_to_string(&mut json_data)?;
-        file.flush()?;
-        let _ = encrypt_directory();
-        let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
-
-        let deck_data = deck_data_vec
+        let _ = decrypt_vault();
+        let vault = read_vault();
+        let _ = encrypt_vault();
+        vault
+            .decks
             .into_iter()
-            .next()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "No data found in JSON"))?;
-
-        Ok(deck_data)
+            .find(|d| d.domain == self.domain)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No data found in JSON"))
     }
 
     #[allow(dead_code)]
@@ -90,42 +76,97 @@ impl DeckData {
         let public_key = RsaPublicKey::from_pkcs1_pem(&self.rsa_public_key).unwrap();
 
         let keys = (private_key, public_key);
-        let decrypted_data = keys
-            .0
+        keys.0
             .decrypt(Pkcs1v15Encrypt, &self.ciphertext)
-            .expect("Failed to decrypt");
-
-        decrypted_data
+            .expect("Failed to decrypt")
     }
 
-    //created for testing purposes
     pub fn test_save_to_json(&self) -> Result<()> {
-        let contents = self.serialize_struct();
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
-        let mut file = File::create(filepath)?;
-        writeln!(file, "{}", contents)?;
-        file.flush()?;
+        let mut vault = read_vault();
+        if let Some(pos) = vault.decks.iter().position(|d| d.domain == self.domain) {
+            vault.decks[pos] = self.clone();
+        } else {
+            vault.decks.push(self.clone());
+        }
+        write_vault(&vault)?;
         Ok(())
     }
 
-    //created for testing purposes
     #[allow(dead_code)]
     pub fn test_read_data_from_json(&self) -> Result<DeckData> {
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
-        let _ = decrypt_directory();
-        let mut file = File::open(filepath)?;
-        let mut json_data = String::new();
-        file.read_to_string(&mut json_data)?;
-        file.flush()?;
-        let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
-
-        let deck_data = deck_data_vec
+        let vault = read_vault();
+        vault
+            .decks
             .into_iter()
-            .next()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "No data found in JSON"))?;
-
-        Ok(deck_data)
+            .find(|d| d.domain == self.domain)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No data found in JSON"))
     }
+}
+
+pub fn delete_deck(domain: &str) -> Result<()> {
+    let _ = decrypt_vault();
+    let mut vault = read_vault();
+    vault.decks.retain(|d| d.domain != domain);
+    write_vault(&vault)?;
+    let _ = encrypt_vault();
+    Ok(())
+}
+
+pub fn update_deck(domain: &str, new_password: &str, admin: Admin) -> Result<()> {
+    let _ = decrypt_vault();
+    let mut vault = read_vault();
+    if let Some(pos) = vault.decks.iter().position(|d| d.domain == domain) {
+        let notes = vault.decks[pos].notes.clone();
+        let mut rng = thread_rng();
+        let private_key = RsaPrivateKey::new(&mut rng, 2048).expect("Failed to generate key");
+        let public_key = RsaPublicKey::from(&private_key);
+        let ciphertext = public_key
+            .encrypt(&mut rng, Pkcs1v15Encrypt, new_password.as_bytes())
+            .expect("Failed to encrypt");
+        vault.decks[pos] = DeckData::new(
+            admin,
+            domain.to_string(),
+            ciphertext,
+            public_key,
+            private_key,
+            notes,
+        );
+    } else {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "Domain not found"));
+    }
+    write_vault(&vault)?;
+    let _ = encrypt_vault();
+    Ok(())
+}
+
+pub fn test_delete_deck(domain: &str) -> Result<()> {
+    let mut vault = read_vault();
+    vault.decks.retain(|d| d.domain != domain);
+    write_vault(&vault)?;
+    Ok(())
+}
+
+pub fn test_update_deck(domain: &str, new_password: &str, admin: Admin) -> Result<()> {
+    let mut vault = read_vault();
+    if let Some(pos) = vault.decks.iter().position(|d| d.domain == domain) {
+        let notes = vault.decks[pos].notes.clone();
+        let mut rng = thread_rng();
+        let private_key = RsaPrivateKey::new(&mut rng, 2048).expect("Failed to generate key");
+        let public_key = RsaPublicKey::from(&private_key);
+        let ciphertext = public_key
+            .encrypt(&mut rng, Pkcs1v15Encrypt, new_password.as_bytes())
+            .expect("Failed to encrypt");
+        vault.decks[pos] = DeckData::new(
+            admin,
+            domain.to_string(),
+            ciphertext,
+            public_key,
+            private_key,
+            notes,
+        );
+    } else {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "Domain not found"));
+    }
+    write_vault(&vault)?;
+    Ok(())
 }

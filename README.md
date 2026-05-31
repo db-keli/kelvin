@@ -1,4 +1,7 @@
-# kelvin
+<h1>
+  kelvin
+  <img src="kelvin-logo.png" align="right" height="40" alt="kelvin logo">
+</h1>
 
 ### Intro
 The kelvin crate provides modules and methods used for creating simple password encryption managers. The crate was mainly built

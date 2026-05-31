@@ -1,18 +1,11 @@
-/// src/admin.rs
-///
-///
 use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::{Read, Result, Write};
+use std::io::{Error, ErrorKind, Result};
 
-use crate::data::{decrypt_directory, encrypt_directory};
-use crate::prompt::vault_path;
+use crate::data::{decrypt_vault, encrypt_vault, read_vault, write_vault};
 
-// pub static VAULT_PATH: &str = "./.vault";
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[warn(dead_code)]
 pub struct Admin {
     pub username: String,
@@ -39,29 +32,21 @@ impl Admin {
     }
 
     pub fn save_to_json(&self) -> Result<()> {
-        let contents = serde_json::to_string(&self)?;
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
-
-        let mut file = File::create(filepath)?;
-        writeln!(file, "{}", contents)?;
-        file.flush()?;
-        encrypt_directory().unwrap();
+        let _ = decrypt_vault();
+        let mut vault = read_vault();
+        vault.admin = Some(self.clone());
+        write_vault(&vault)?;
+        encrypt_vault().unwrap();
         Ok(())
     }
 
     pub fn read_data_from_json(&self) -> Result<Admin> {
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
-        let _ = decrypt_directory();
-        let mut file = File::open(filepath)?;
-        let mut json_data = String::new();
-        file.read_to_string(&mut json_data)?;
-        file.flush()?;
-
-        let admin_data: Admin = serde_json::from_str(&json_data)?;
-
-        Ok(admin_data)
+        let _ = decrypt_vault();
+        let vault = read_vault();
+        let _ = encrypt_vault();
+        vault
+            .admin
+            .ok_or_else(|| Error::new(ErrorKind::NotFound, "No such file or directory"))
     }
 
     pub fn prompt_auth(&self, username: String, password: String) -> Result<bool> {
@@ -74,29 +59,17 @@ impl Admin {
         }
     }
 
-    //created for testing purposes
     pub fn test_save_to_json(&self) -> Result<()> {
-        let contents = serde_json::to_string(&self)?;
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
-
-        let mut file = File::create(filepath)?;
-        writeln!(file, "{}", contents)?;
-        file.flush()?;
+        let mut vault = read_vault();
+        vault.admin = Some(self.clone());
+        write_vault(&vault)?;
         Ok(())
     }
 
-    //created for testing purposes
     pub fn test_read_data_from_json(&self) -> Result<Admin> {
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.username);
-        let mut file = File::open(filepath)?;
-        let mut json_data = String::new();
-        file.read_to_string(&mut json_data)?;
-        file.flush()?;
-
-        let admin_data: Admin = serde_json::from_str(&json_data)?;
-
-        Ok(admin_data)
+        let vault = read_vault();
+        vault
+            .admin
+            .ok_or_else(|| Error::new(ErrorKind::NotFound, "No such file or directory"))
     }
 }

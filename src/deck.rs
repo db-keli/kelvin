@@ -1,14 +1,10 @@
 use rand::{rngs::ThreadRng, thread_rng};
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::{Error, ErrorKind, Read, Result, Write};
+use std::io::{Error, ErrorKind, Result};
 
-use crate::prompt::vault_path;
-use crate::{
-    deckdata::DeckData,
-    data::{decrypt_directory, encrypt_directory},
-};
+use crate::data::{decrypt_vault, encrypt_vault, read_vault};
+use crate::deckdata::DeckData;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Deck {
@@ -28,10 +24,9 @@ pub fn get_keys() -> (RsaPrivateKey, RsaPublicKey, ThreadRng) {
 impl Deck {
     pub fn new(domain: &str, plaintext: &str) -> Deck {
         let mut domain = domain.to_string();
-        let vault_dir = vault_path();
         let mut counter = 1;
 
-        while Self::domain_exists(&vault_dir, &domain) {
+        while Self::domain_exists(&domain) {
             domain = format!("{}_{}", domain, counter);
             counter += 1;
         }
@@ -40,9 +35,16 @@ impl Deck {
         Deck { domain, plaintext }
     }
 
-    fn domain_exists(vault_dir: &std::path::PathBuf, domain: &str) -> bool {
-        let filepath = format!("{}/{}.json", vault_dir.display(), domain);
-        std::path::Path::new(&filepath).exists()
+    pub fn from_domain(domain: &str) -> Deck {
+        Deck {
+            domain: domain.to_string(),
+            plaintext: String::new(),
+        }
+    }
+
+    fn domain_exists(domain: &str) -> bool {
+        let vault = read_vault();
+        vault.decks.iter().any(|d| d.domain == domain)
     }
 
     pub fn encrypt(&self) -> (Vec<u8>, (RsaPrivateKey, RsaPublicKey, ThreadRng)) {
@@ -60,22 +62,13 @@ impl Deck {
 
     #[allow(dead_code)]
     pub fn read_data_from_json(&self) -> Result<DeckData> {
-        let vault_dir = vault_path();
-        let filepath = format!("{}/{}.json", vault_dir.display(), self.domain);
-        let _ = decrypt_directory();
-        let mut file = File::open(filepath)?;
-        let mut json_data = String::new();
-        file.read_to_string(&mut json_data)?;
-        file.flush()?;
-        let _ = encrypt_directory();
-
-        let deck_data_vec: Vec<DeckData> = serde_json::from_str(&json_data)?;
-
-        let deck_data = deck_data_vec
+        let _ = decrypt_vault();
+        let vault = read_vault();
+        let _ = encrypt_vault();
+        vault
+            .decks
             .into_iter()
-            .next()
-            .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No data found in JSON"))?;
-
-        Ok(deck_data)
+            .find(|d| d.domain == self.domain)
+            .ok_or_else(|| Error::new(ErrorKind::NotFound, "No data found in JSON"))
     }
 }
