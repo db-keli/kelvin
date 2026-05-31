@@ -1,7 +1,4 @@
-<h1>
-  <img src="kelvin-logo.png" height="40" align="absmiddle" alt="kelvin logo">
-  kelvin
-</h1>
+# <img src="kelvin-logo.png" height="80" width="80" alt="kelvin logo"> kelvin
 
 ### Intro
 
