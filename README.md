@@ -1,6 +1,6 @@
-<h1>
+<h1 style="display: flex; align-items: center; gap: 12px;">
+  <img src="kelvin-logo.png" height="48" alt="kelvin logo">
   kelvin
-  <img src="kelvin-logo.png" align="right" height="40" alt="kelvin logo">
 </h1>
 
 ### Intro
