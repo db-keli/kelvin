@@ -1,15 +1,14 @@
-<h1 style="display: flex; align-items: center; gap: 12px;">
-  <img src="kelvin-logo.png" height="48" alt="kelvin logo">
+<h1>
+  <img src="kelvin-logo.png" height="40" align="absmiddle" alt="kelvin logo">
   kelvin
 </h1>
 
 ### Intro
+
 The kelvin crate provides modules and methods used for creating simple password encryption managers. The crate was mainly built
 while working on kelvin, a terminal password manager.
 
 `terminal password manager`
-
-![kelvin](kelvin.png)
 
 ### about
 
