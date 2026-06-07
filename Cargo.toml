@@ -1,4 +1,4 @@
-workspace = { members = ["./"] }
+workspace = { members = ["./", "tui"] }
 
 [package]
 name = "kelvin-rs"
